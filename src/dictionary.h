@@ -33,11 +33,13 @@ protected:
     long long HashToArray(HASHUNITID **VocabHash, ARRAYUNIT *VocabArray, long long VocabSize);
     void CutVocab(ARRAYUNIT *VocabArray, long long VocabSize);
     void FillIdToVocabHash(ARRAYUNIT *VocabArray, HASHUNITID **VocabHash);
-
+    void GetLine(FILE *CorpusSplit, std::vector<long long> line);
 public:
     HASHUNITID ** VocabHash;
     explicit Dictionary(Args args);
     long long HashSearch(char *Word, HASHUNITID **VocabHash);
     void BuildVocab(FILE *CorpusFile, HASHUNITID **VocabHash);
     HASHUNITID ** Init(int Tsize);
+    long long GetWordId(char *Word);
+    void SplitCorpus();
 };

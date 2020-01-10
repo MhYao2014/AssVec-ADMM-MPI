@@ -301,3 +301,55 @@ Dictionary::Dictionary(Args args) :args_(args) {
     Dictionary::BuildVocab(Corpus, VocabHash);
     fclose(Corpus);
 }
+
+long long Dictionary::GetWordId(char *Word) {
+    long long id = HashSearch(Word, VocabHash);
+    return id;
+}
+
+void Dictionary::GetLine(FILE *CorpusSplit, std::vector<long long> line) {
+    line.clear();
+    char Word[MaxWordLen];
+    int NotReadSuccess;
+    long long id;
+    while (true) {
+        NotReadSuccess = Dictionary::GetWord(CorpusSplit,Word); // 1表示没有成功读取单词
+        if (NotReadSuccess) {
+            return;
+        } else {
+           id = Dictionary::GetWordId(Word);
+           if (id != -1) {
+               line.push_back(id);
+           }
+        }
+    }
+}
+
+void Dictionary::SplitCorpus() {
+    FILE *CorpusSplit = fopen(args_.input.c_str(),"r");
+    // 直到读到文件末尾，
+    // 否则总是以当前词为中心，
+    // 建立词窗并将周围词的序号写入对应文件中。
+    std::vector<long long> line;
+    while (!feof(CorpusSplit)) {
+        // 读取一整行，并转化为序号存入vector容器中。
+        Dictionary::GetLine(CorpusSplit,line);
+        // 从头至尾遍历每个序号，
+        // 建立对应词窗
+        for (int i=0; i < line.size(); i++) {
+            // 检测当前词汇是否已经创立了对应的文件
+            // 如果没有那就创建，否则打开对应文件并写入数据
+            FILE *fp = fopen((std::to_string(line[i])).c_str(),"a+");
+            for (int j = -args_.ws; j <= args_.ws; j++) {
+                if (j == 0) {
+                    continue;
+                }
+                if (j+i >= 0 && j+i <line.size()) {
+                    fprintf(fp,"%s ",std::to_string(line[i+j]).c_str());
+                }
+            }
+            fprintf(fp,"\n");
+            fclose(fp);
+        }
+    }
+}
