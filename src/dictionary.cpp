@@ -1,11 +1,12 @@
 //
 // Created by mhyao on 20-1-10.
 //
-
+#pragma once
 #include "dictionary.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <fstream>
 
 int scmp(char *s1, char *s2) {
     // 以s1字符串为标准，看s2是不是等于s1
@@ -293,4 +294,10 @@ ARRAYUNIT* Dictionary::BuildVocab(FILE *CorpusFile, HASHUNITID **VocabHash, long
     }
     htmp = NULL;
     return VocabArray;
+}
+
+Dictionary::Dictionary(Args args) {
+    VocabHash = Dictionary::Init(TSIZE);
+    FILE* Corpus = fopen(args.input.c_str(), "r");
+    Dictionary::BuildVocab(Corpus, VocabHash, args.maxVocab, args.minCount, args.IfSaveVocab);
 }

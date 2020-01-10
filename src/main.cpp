@@ -50,14 +50,28 @@
 //    return 0;
 //}
 #include <stdio.h>
+#include <fstream>
 #include "dictionary.h"
+#include "args.h"
 int main(int argc, char**argv) {
-    if (argc < 2) {
-        printf("%s\n", argv[0]);
+    // 从命令行读取参数
+    std::vector<std::string> args(argv, argv + argc);
+    Args arguments = Args();
+    if (args.size() < 2) {
+        arguments.printHelp();
+        exit(EXIT_FAILURE);
     }
+    arguments.parseArgs(args);
     // root进程首先统计原始语料的词频,建立词典
     // 并且给每个词按照词频从大到小赋予编号
-    Dictionary dict;
-
+    // 首先检查能否打开原始训练语料
+    std::ifstream Corpus(arguments.input);
+    if (!Corpus.is_open()) {
+        throw std::invalid_argument(arguments.input + "cannot be opened for training");
+    }
+    Corpus.close();
+    // 初始化一个词典,并建立词表
+    // 并且给每个词按照词频从大到小赋予编号
+    Dictionary dict(arguments);
     return 0;
 }

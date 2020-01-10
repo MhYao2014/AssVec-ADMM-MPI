@@ -1,11 +1,7 @@
 //
 // Created by mhyao on 20-1-10.
 //
-
-#ifndef ASSVEC_ARGS_H
-#define ASSVEC_ARGS_H
-
-#endif //ASSVEC_ARGS_H
+#pragma once
 
 #include <istream>
 #include <ostream>
@@ -13,9 +9,20 @@
 #include <vector>
 
 class Args {
-protected:
-
 public:
     Args();
+    std::string input;
+    std::string output;
     int IfSaveVocab;
+    double lr;
+    int lrUpdateRate;
+    int dim;
+    int ws;
+    int epoch;
+    int minCount;
+    int maxVocab;
+    int neg;
+    int thread;
+    void parseArgs(const std::vector<std::string>& args);
+    void printHelp();
 };

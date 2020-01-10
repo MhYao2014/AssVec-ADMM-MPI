@@ -1,18 +1,16 @@
 //
 // Created by mhyao on 20-1-10.
 //
-
-#ifndef MULTITHREAD_DICTIONARY_H
-#define MULTITHREAD_DICTIONARY_H
+#pragma once
 #define TSIZE 1048576
 #define SEED  1159241
 #define MaxWordLen 1000
 #define HASHFN  HashValue
-#endif //MULTITHREAD_DICTIONARY_H
 
 #include <iostream>
 #include <stdlib.h>
 #include <memory>
+#include "args.h"
 
 typedef struct VocabHashWithId {
     char *Word;
@@ -27,7 +25,7 @@ typedef struct VocabUnit {
 } ARRAYUNIT;
 
 class Dictionary {
-public:
+protected:
     unsigned int HashValue(char *word, int tsize, unsigned int seed);
     void HashMapWord(char *Word, HASHUNITID **VocabHash);
     int GetWord(FILE *CorpusFile, char *Word);
@@ -37,7 +35,7 @@ public:
 
 public:
     HASHUNITID ** VocabHash;
-    explicit Dictionary(std::shared_ptr<>);
+    explicit Dictionary(Args args);
     long long HashSearch(char *Word, HASHUNITID **VocabHash);
     ARRAYUNIT * BuildVocab(FILE *CorpusFile, HASHUNITID **VocabHash,long long MaxVocab, long long MinCount, int IfSaveVocab);
     HASHUNITID ** Init(int Tsize);
