@@ -26,17 +26,18 @@ typedef struct VocabUnit {
 
 class Dictionary {
 protected:
+    Args args_;
     unsigned int HashValue(char *word, int tsize, unsigned int seed);
     void HashMapWord(char *Word, HASHUNITID **VocabHash);
     int GetWord(FILE *CorpusFile, char *Word);
     long long HashToArray(HASHUNITID **VocabHash, ARRAYUNIT *VocabArray, long long VocabSize);
-    void CutVocab(ARRAYUNIT *VocabArray, long long MaxVocab, long long MinCount, long long VocabSize, int IfSaveVocab);
+    void CutVocab(ARRAYUNIT *VocabArray, long long VocabSize);
     void FillIdToVocabHash(ARRAYUNIT *VocabArray, HASHUNITID **VocabHash);
 
 public:
     HASHUNITID ** VocabHash;
     explicit Dictionary(Args args);
     long long HashSearch(char *Word, HASHUNITID **VocabHash);
-    ARRAYUNIT * BuildVocab(FILE *CorpusFile, HASHUNITID **VocabHash,long long MaxVocab, long long MinCount, int IfSaveVocab);
+    void BuildVocab(FILE *CorpusFile, HASHUNITID **VocabHash);
     HASHUNITID ** Init(int Tsize);
 };

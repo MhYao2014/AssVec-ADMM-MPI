@@ -21,8 +21,8 @@ Args::Args() {
 
 void Args::printHelp() {
     std::cerr << "\nThe following arguments are mandatory:\n"
-              << "  -output             output vectors path\n"
               << "  -input              training file path\n"
+              << "  -output             output vectors path\n"
               << "  -IfSaveVocab        whether save the vocab file\n"
               << "\nThe following arguments for training are optional:\n"
               << "  -lr                 learning rate [" << lr << "]\n"

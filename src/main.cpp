@@ -73,5 +73,21 @@ int main(int argc, char**argv) {
     // 初始化一个词典,并建立词表
     // 并且给每个词按照词频从大到小赋予编号
     Dictionary dict(arguments);
+    HASHUNITID *htmp= NULL,*hpre= NULL;
+    for (int i=0;i<TSIZE;i++) {
+        if (dict.VocabHash[i] != NULL) {
+            htmp = dict.VocabHash[i];
+            while (htmp != NULL) {
+                free(htmp->Word);
+                hpre = htmp;
+                htmp = htmp->next;
+                free(hpre);
+                hpre = NULL;//防止hpre变成野指针，随机指向某个内存区域
+            }
+        }
+    }
+    free(dict.VocabHash);
+    htmp = NULL;
+    hpre = NULL;
     return 0;
 }

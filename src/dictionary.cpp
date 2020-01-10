@@ -174,29 +174,29 @@ long long Dictionary::HashToArray(HASHUNITID **VocabHash, ARRAYUNIT *VocabArray,
     return ArrayCounter;
 }
 
-void Dictionary::CutVocab(ARRAYUNIT *VocabArray, long long MaxVocab, long long MinCount, long long VocabSize,
-                          int IfSaveVocab) {
+void Dictionary::CutVocab(ARRAYUNIT *VocabArray, long long VocabSize) {
     // 先砍掉超出最大词汇表长度的单词
     //fprintf(stderr, "\nMaxVocab: %lld; arrarlen: %lld\n", MaxVocab, VocabSize);
-    if (MaxVocab > 0 && MaxVocab < VocabSize)
+    if (args_.maxVocab > 0 && args_.maxVocab < VocabSize)
         qsort(VocabArray, VocabSize, sizeof(ARRAYUNIT), CompareVocab);
-    else MaxVocab = VocabSize;
+    else args_.maxVocab = VocabSize;
     // CompareVocabTie 按照单词首字母的大小裁定两个词频一样的单词谁先谁后
-    qsort(VocabArray, MaxVocab, sizeof(ARRAYUNIT), CompareVocabTie);
+    qsort(VocabArray, args_.maxVocab, sizeof(ARRAYUNIT), CompareVocabTie);
+    FILE* VocabFile = fopen("vocab.txt", "w");
     // 从临界词频（刚刚比MinCount大的词频）处截断词表
-    for (long long FinalVocabSize=0; FinalVocabSize < MaxVocab; FinalVocabSize++) {
-        if (VocabArray[FinalVocabSize].Count < MinCount) {
+    for (long long FinalVocabSize=0; FinalVocabSize < args_.maxVocab; FinalVocabSize++) {
+        if (VocabArray[FinalVocabSize].Count < args_.minCount) {
             // 将词频不够的单词对应的词字符串指针设为空，count清零。
             VocabArray[FinalVocabSize].Word = NULL;
             VocabArray[FinalVocabSize].Count = 0;
-        } else if (IfSaveVocab) {
-            // 输出到屏幕或者在终端用管道命令行输出到txt文档。
-            printf("%s %lld\n", VocabArray[FinalVocabSize].Word, VocabArray[FinalVocabSize].Count);
+        } else if (args_.IfSaveVocab) {
+            fprintf(VocabFile,"%s %lld\n", VocabArray[FinalVocabSize].Word, VocabArray[FinalVocabSize].Count);
         }
     }
+    fclose(VocabFile);
     // 将超过最大词汇表长度部分的词串指针设为空，count清零。
-    if (MaxVocab < VocabSize) {
-        for (long long FinalVocabSize=MaxVocab; FinalVocabSize < VocabSize; FinalVocabSize++) {
+    if (args_.maxVocab < VocabSize) {
+        for (long long FinalVocabSize=args_.maxVocab; FinalVocabSize < VocabSize; FinalVocabSize++) {
             VocabArray[FinalVocabSize].Word = NULL;
             VocabArray[FinalVocabSize].Count = 0;
         }
@@ -247,8 +247,7 @@ long long Dictionary::HashSearch(char *Word, HASHUNITID **VocabHash) {
     return id;
 }
 
-ARRAYUNIT* Dictionary::BuildVocab(FILE *CorpusFile, HASHUNITID **VocabHash, long long MaxVocab, long long MinCount,
-                                  int IfSaveVocab) {
+void Dictionary::BuildVocab(FILE *CorpusFile, HASHUNITID **VocabHash) {
     // 变量定义区，第一次阅读可以跳过，
     // 后面用到再反过来看
     int IfNotGet=1;
@@ -273,7 +272,7 @@ ARRAYUNIT* Dictionary::BuildVocab(FILE *CorpusFile, HASHUNITID **VocabHash, long
     VocabSize = Dictionary::HashToArray(VocabHash,VocabArray,VocabSize);
     fprintf(stderr, "\nCounted %lld unique words.\n", VocabSize);
     // 开始利用最大词表长度以及最小词频限制删减词典,并将词表保存在一个文件中
-    Dictionary::CutVocab(VocabArray,MaxVocab,MinCount,VocabSize, IfSaveVocab);
+    Dictionary::CutVocab(VocabArray, VocabSize);
     // 根据VocabArray再给哈希表里每个单词赋予id：
     Dictionary::FillIdToVocabHash(VocabArray,VocabHash);
     // 释放内存，防止出现野指针与内存泄漏。
@@ -293,11 +292,12 @@ ARRAYUNIT* Dictionary::BuildVocab(FILE *CorpusFile, HASHUNITID **VocabHash, long
         }
     }
     htmp = NULL;
-    return VocabArray;
+    free(VocabArray);
 }
 
-Dictionary::Dictionary(Args args) {
+Dictionary::Dictionary(Args args) :args_(args) {
     VocabHash = Dictionary::Init(TSIZE);
     FILE* Corpus = fopen(args.input.c_str(), "r");
-    Dictionary::BuildVocab(Corpus, VocabHash, args.maxVocab, args.minCount, args.IfSaveVocab);
+    Dictionary::BuildVocab(Corpus, VocabHash);
+    fclose(Corpus);
 }
