@@ -1,0 +1,2 @@
+/usr/bin/ar qc libAssVec-s.a  CMakeFiles/AssVec-s.dir/src/server/main.cpp.o
+/usr/bin/ranlib libAssVec-s.a
