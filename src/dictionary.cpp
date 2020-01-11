@@ -320,9 +320,12 @@ void Dictionary::GetLine(FILE *CorpusSplit, std::vector<long long> &line) {
             return;
         } else {
            id = Dictionary::GetWordId(Word);
-           if (id != -1) {
-               line.push_back(id);
-           }
+           // 这里没有查到的词也放进去，
+           // 稀疏一下line的容量 (因为后面会跳过这些词)。
+           line.push_back(id);
+//           if (id != -1) {
+//               line.push_back(id);
+//           }
         }
     }
 }
@@ -347,6 +350,10 @@ void Dictionary::SplitCorpus() {
         for (int i=0; i < line.size(); i++) {
             // 检测当前词汇是否已经创立了对应的文件
             // 如果没有那就创建，否则打开对应文件并写入数据
+            // 遇到放弃的词就跳过
+            if (line[i] == -1) {
+                continue;
+            }
             ftmp = fopen((std::to_string(line[i])).c_str(),"a+");
             if (ftmp == NULL) {
                 throw 20;
@@ -358,19 +365,22 @@ void Dictionary::SplitCorpus() {
                 }
                 // 检测i+j指向的词还在line的范围内
                 if (j+i >= 0 && j+i <line.size()) {
+                    if (line[i+j] == -1) {
+                        continue;
+                    }
                     fprintf(ftmp,"%s\t",std::to_string(line[i+j]).c_str());
                 }
             }
             // 当前中心词的一个词窗处理完毕，在相应文件中换行
             fprintf(ftmp,"\n");
             // 将内存中的内容明确的输入到文件中
-//            fflush(ftmp);
+            // fflush(ftmp);
             // 关闭中心词对应的文件
             fclose(ftmp);
         }
         // 记录处理过的词窗个数
         WordWinCount += line.size();
-        if (WordWinCount % 100000 == 0) {
+        if (WordWinCount % 10 == 0) {
             fprintf(stderr, "\rHave processed %lld word windows", WordWinCount);
         }
     }
