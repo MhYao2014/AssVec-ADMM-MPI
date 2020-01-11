@@ -27,6 +27,7 @@ typedef struct VocabUnit {
 class Dictionary {
 protected:
     Args args_;
+    long long RealVocabSize;
     unsigned int HashValue(char *word, int tsize, unsigned int seed);
     void HashMapWord(char *Word, HASHUNITID **VocabHash);
     int GetWord(FILE *CorpusFile, char *Word);
