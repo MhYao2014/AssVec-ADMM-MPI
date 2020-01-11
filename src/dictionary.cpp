@@ -337,7 +337,7 @@ void Dictionary::SplitCorpus() {
         files.push_back(fopen((std::to_string(file)).c_str(),"a+"));
     }
     std::vector<long long> line;
-    int LineCount=0;
+    long long WordCount=0;
     while (!feof(CorpusSplit)) {
         // 读取一整行，并转化为序号存入vector容器中。
         Dictionary::GetLine(CorpusSplit,line);
@@ -360,9 +360,9 @@ void Dictionary::SplitCorpus() {
                 fprintf(files[line[i]],"\n");
             }
         }
-        LineCount += 1;
-        if (LineCount % 10000 == 0) {
-            std::cerr << LineCount << std::endl;
+        WordCount += line.size();
+        if (WordCount % 100000 == 0) {
+            std::cerr << WordCount << std::endl;
             for (long long file=0; file < RealVocabSize; file++) {
                 fflush(files[file]);
             }
