@@ -328,54 +328,50 @@ void Dictionary::GetLine(FILE *CorpusSplit, std::vector<long long> &line) {
 }
 
 void Dictionary::SplitCorpus() {
+    // 打开原始语料文件
     FILE *CorpusSplit = fopen(args_.input.c_str(),"r");
-    // 直到读到文件末尾，
-    // 否则总是以当前词为中心，
-    // 建立词窗并将周围词的序号写入对应文件中。
-    std::vector<FILE *> files;
-    for (long long file=0; file < RealVocabSize; file++) {
-        files.push_back(fopen((std::to_string(file)).c_str(),"a+"));
-    }
+    // 设立一个临时文件指针，用来指向每个遇到的文件
+    FILE * ftmp=NULL;
+    // line存储原始语料中的一行中所有词汇的序号
     std::vector<long long> line;
-    long long WordCount=0;
+    // 记录已经处理了多少词窗了
+    long long WordWinCount=0;
     while (true) {
+        // 如果原始语料到了文件末尾就跳出循环
         if (feof(CorpusSplit)) {
             break;
         }
-        // 读取一整行，并转化为序号存入vector容器中。
+        // 读取一整行，并转化为序号存入vector容器中（line）。
         Dictionary::GetLine(CorpusSplit,line);
-        // 从头至尾遍历每个序号，
-        // 建立对应词窗
+        // 从头至尾遍历每个序号，建立对应词窗
         for (int i=0; i < line.size(); i++) {
             // 检测当前词汇是否已经创立了对应的文件
             // 如果没有那就创建，否则打开对应文件并写入数据
+            ftmp = fopen((std::to_string(line[i])).c_str(),"a+");
+            if (ftmp == NULL) {
+                throw 20;
+            }
             for (int j = -args_.ws; j <= args_.ws; j++) {
+                // 跳过与自己共现
                 if (j == 0) {
                     continue;
                 }
-
+                // 检测i+j指向的词还在line的范围内
                 if (j+i >= 0 && j+i <line.size()) {
-                    if (files[line[i]] != NULL) {
-                        fprintf(files[line[i]],"%s\t",std::to_string(line[i+j]).c_str());
-                    }
+                    fprintf(ftmp,"%s\t",std::to_string(line[i+j]).c_str());
                 }
             }
-            if (files[line[i]] != NULL) {
-                fprintf(files[line[i]],"\n");
-            }
+            // 当前中心词的一个词窗处理完毕，在相应文件中换行
+            fprintf(ftmp,"\n");
+            // 将内存中的内容明确的输入到文件中
+//            fflush(ftmp);
+            // 关闭中心词对应的文件
+            fclose(ftmp);
         }
-        WordCount += line.size();
-        if (WordCount % 100000 == 0) {
-            fprintf(stderr, "\rHave processed %lld word windows", WordCount);
-            for (long long file=0; file < RealVocabSize; file++) {
-                fflush(files[file]);
-            }
-        }
-    }
-    fprintf(stderr, "\nClosing files.\n");
-    for (long long file=0; file < RealVocabSize; file++) {
-        if (files[file] != NULL) {
-            fclose(files[file]);
+        // 记录处理过的词窗个数
+        WordWinCount += line.size();
+        if (WordWinCount % 100000 == 0) {
+            fprintf(stderr, "\rHave processed %lld word windows", WordWinCount);
         }
     }
 }
