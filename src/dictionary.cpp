@@ -380,7 +380,7 @@ void Dictionary::SplitCorpus() {
         }
         // 记录处理过的词窗个数
         WordWinCount += line.size();
-        if (WordWinCount % 10 == 0) {
+        if (WordWinCount % 100000 == 0) {
             fprintf(stderr, "\rHave processed %lld word windows", WordWinCount);
         }
     }
