@@ -190,6 +190,7 @@ void Dictionary::CutVocab(ARRAYUNIT *VocabArray, long long VocabSize) {
             VocabArray[FinalVocabSize].Word = NULL;
             VocabArray[FinalVocabSize].Count = 0;
         } else if (args_.IfSaveVocab) {
+            RealVocabSize += 1;
             fprintf(VocabFile,"%s %lld\n", VocabArray[FinalVocabSize].Word, VocabArray[FinalVocabSize].Count);
         }
     }
@@ -295,7 +296,7 @@ void Dictionary::BuildVocab(FILE *CorpusFile, HASHUNITID **VocabHash) {
     free(VocabArray);
 }
 
-Dictionary::Dictionary(Args args) :args_(args) {
+Dictionary::Dictionary(Args args) :args_(args),RealVocabSize(0) {
     VocabHash = Dictionary::Init(TSIZE);
     FILE* Corpus = fopen(args.input.c_str(), "r");
     Dictionary::BuildVocab(Corpus, VocabHash);
@@ -307,8 +308,9 @@ long long Dictionary::GetWordId(char *Word) {
     return id;
 }
 
-void Dictionary::GetLine(FILE *CorpusSplit, std::vector<long long> line) {
+void Dictionary::GetLine(FILE *CorpusSplit, std::vector<long long> &line) {
     line.clear();
+    line.shrink_to_fit();
     char Word[MaxWordLen];
     int NotReadSuccess;
     long long id;
@@ -330,7 +332,12 @@ void Dictionary::SplitCorpus() {
     // 直到读到文件末尾，
     // 否则总是以当前词为中心，
     // 建立词窗并将周围词的序号写入对应文件中。
+    std::vector<FILE *> files;
+    for (long long file=0; file < RealVocabSize; file++) {
+        files.push_back(fopen((std::to_string(file)).c_str(),"a+"));
+    }
     std::vector<long long> line;
+    int LineCount=0;
     while (!feof(CorpusSplit)) {
         // 读取一整行，并转化为序号存入vector容器中。
         Dictionary::GetLine(CorpusSplit,line);
@@ -339,17 +346,29 @@ void Dictionary::SplitCorpus() {
         for (int i=0; i < line.size(); i++) {
             // 检测当前词汇是否已经创立了对应的文件
             // 如果没有那就创建，否则打开对应文件并写入数据
-            FILE *fp = fopen((std::to_string(line[i])).c_str(),"a+");
             for (int j = -args_.ws; j <= args_.ws; j++) {
                 if (j == 0) {
                     continue;
                 }
                 if (j+i >= 0 && j+i <line.size()) {
-                    fprintf(fp,"%s ",std::to_string(line[i+j]).c_str());
+                    if (files[line[i]] != NULL) {
+                        fprintf(files[line[i]],"%s\t",std::to_string(line[i+j]).c_str());
+                    }
                 }
             }
-            fprintf(fp,"\n");
-            fclose(fp);
+            if (files[line[i]] != NULL) {
+                fprintf(files[line[i]],"\n");
+            }
         }
+        LineCount += 1;
+        if (LineCount % 10000 == 0) {
+            std::cerr << LineCount << std::endl;
+            for (long long file=0; file < RealVocabSize; file++) {
+                fflush(files[file]);
+            }
+        }
+    }
+    for (long long file=0; file < RealVocabSize; file++) {
+        fclose(files[file]);
     }
 }

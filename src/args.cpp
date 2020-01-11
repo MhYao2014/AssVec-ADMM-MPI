@@ -33,6 +33,8 @@ void Args::printHelp() {
               << "  -epoch              number of epochs [" << epoch << "]\n"
               << "  -minCount           minimal number of word occurences ["
               << minCount << "]\n"
+              << "  -maxVocab           maximal number of word vocabulary ["
+              << maxVocab << "]\n"
               << "  -neg                number of negatives sampled [" << neg << "]\n"
               << "  -thread             number of threads [" << thread << "]\n";
 }
@@ -67,6 +69,8 @@ void Args::parseArgs(const std::vector<std::string> &args) {
                 epoch = std::stoi(args.at(ai + 1));
             } else if (args[ai] == "-minCount") {
                 minCount = std::stoi(args.at(ai + 1));
+            } else if (args[ai] == "-maxVocab") {
+                maxVocab = std::stoi(args.at(ai + 1));
             } else if (args[ai] == "-neg") {
                 neg = std::stoi(args.at(ai + 1));
             } else if (args[ai] == "-thread") {

@@ -80,6 +80,22 @@ int main(int argc, char**argv) {
     // 每个词汇的训练语料为所有出现在该词汇词窗
     // 中的单词的编号.同一个词窗的编号占一行.
     dict.SplitCorpus();
+    HASHUNITID *htmp= NULL,*hpre= NULL;
+    for (int i=0;i<TSIZE;i++) {
+        if (dict.VocabHash[i] != NULL) {
+            htmp = dict.VocabHash[i];
+            while (htmp != NULL) {
+                free(htmp->Word);
+                hpre = htmp;
+                htmp = htmp->next;
+                free(hpre);
+                hpre = NULL;//防止hpre变成野指针，随机指向某个内存区域
+            }
+        }
+    }
+    free(dict.VocabHash);
+    htmp = NULL;
+    hpre = NULL;
     return 0;
 }
 
