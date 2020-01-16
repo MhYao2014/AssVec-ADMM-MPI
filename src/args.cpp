@@ -13,8 +13,8 @@ Args::Args() {
     dim = 100;
     ws = 5;
     epoch = 5;
-    minCount = 5;
-    maxVocab = 1000000;
+    minCount = 40;
+    maxVocab = 100000;
     neg = 5;
     thread = 12;
 }
