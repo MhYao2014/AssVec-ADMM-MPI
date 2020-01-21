@@ -7,6 +7,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "args.h"
+#include "dictionary.h"
+#include "matrix.h"
+#include "vector.h"
 
 typedef struct FileSizeUnit {
     long long FileSize;
@@ -115,6 +118,31 @@ int main(int argc, char**argv) {
         }
         fprintf(stderr, "\n");
     }
+    // 各个进程初始化自己的模型,创建训练对象
+    // 根据分组中文件个数,随机初始化input vec参数,
+    // 为output vec申请工作数组,通信数组和缓存数组
+    // 但不进行初始化,通信数组累加本分组的参数
+
+    // 主进程随机初始化output vec参数,并分配到各个进程中的通信数组中去
+    // 将通信数组拷贝到缓存数组和工作数组中去,
+
+    //执行ADMM迭代
+        // 每个进程遍历自己分组中的各个文件,
+            // 依靠多线程并行(openmp)迭代固定次数,求解子问题(各个文件),
+            // 每求解完一个子问题,就将当前参数累加到通信数组中去
+            // 将缓存数组中当前轮数的原始参数复制到工作数组中
+            // 进入下一个问题的求解.
+
+        // 所有进程的所有子问题求解完毕,
+        // 同主进程同步通信(缓存数组),平均参数
+
+        // 实施梯度上升算法
+
+        // 主进程判断残差是否收敛,或者是否达到最大迭代次数
+        // 同时记录训练日志
+
+    // ADMM算法结束,
+    // 主进程保存相关数据,和词向量文件
     MPI_Finalize();
     return 0;
 }
