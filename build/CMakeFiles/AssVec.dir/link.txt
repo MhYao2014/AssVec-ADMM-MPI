@@ -1,1 +1,0 @@
-/usr/bin/c++   -pthread -std=c++11 -funroll-loops -O3 -march=native   CMakeFiles/AssVec.dir/src/main.cpp.o  -o AssVec libAssVec.a -lpthread 

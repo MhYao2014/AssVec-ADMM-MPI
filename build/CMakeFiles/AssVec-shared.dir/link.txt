@@ -1,1 +1,0 @@
-/usr/bin/c++  -fPIC -pthread -std=c++11 -funroll-loops -O3 -march=native  -shared -Wl,-soname,libAssVec.so -o libAssVec.so CMakeFiles/AssVec-shared.dir/src/main.cpp.o CMakeFiles/AssVec-shared.dir/src/dictionary.cpp.o 

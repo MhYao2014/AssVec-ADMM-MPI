@@ -1,2 +1,0 @@
-/usr/bin/ar qc libAssVec.a  CMakeFiles/AssVec-static.dir/src/main.cpp.o CMakeFiles/AssVec-static.dir/src/dictionary.cpp.o
-/usr/bin/ranlib libAssVec.a

@@ -1,5 +1,0 @@
-/home/hutao/CLionProjects/AssVec-ADMM-MPI/build/CMakeFiles/AssVec-shared.dir
-/home/hutao/CLionProjects/AssVec-ADMM-MPI/build/CMakeFiles/edit_cache.dir
-/home/hutao/CLionProjects/AssVec-ADMM-MPI/build/CMakeFiles/AssVec.dir
-/home/hutao/CLionProjects/AssVec-ADMM-MPI/build/CMakeFiles/AssVec-static.dir
-/home/hutao/CLionProjects/AssVec-ADMM-MPI/build/CMakeFiles/rebuild_cache.dir
