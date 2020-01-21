@@ -385,7 +385,3 @@ void Dictionary::SplitCorpus() {
         }
     }
 }
-
-int Dictionary::GetFileSize() {
-
-}

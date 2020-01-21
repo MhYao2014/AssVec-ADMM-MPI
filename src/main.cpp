@@ -1,12 +1,8 @@
 //
 // Created by mhyao on 20-1-9.
 //
-
-int ReadDocumentsNum() {
-    return 0;
-}
-
-#include <openmpi/mpi.h>
+#include <mpi.h>
+#include <omp.h>
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
@@ -112,12 +108,13 @@ int main(int argc, char**argv) {
     // 开始统计分组情况
     SplitGroups(Groups,FileNum,GroupNum);
     // 输出分组情况
-
-    fprintf(stderr,"\nThe %dth Group's size is %lld M. It has %lld files. Including:\n\n\t",rank,Groups[rank].TotalSize / 1020 / 1020,Groups[rank].FileNum);
-    for (long long j=0; j < Groups[rank].FileNames.size(); j++) {
-        fprintf(stderr, "%lld ", Groups[rank].FileNames[j]);
+    if (rank == 0) {
+        fprintf(stderr,"\nThe %dth Group's size is %lld M. It has %lld files. Including:\n\n\t",rank,Groups[rank].TotalSize / 1020 / 1020,Groups[rank].FileNum);
+        for (long long j=0; j < Groups[rank].FileNames.size(); j++) {
+            fprintf(stderr, "%lld ", Groups[rank].FileNames[j]);
+        }
+        fprintf(stderr, "\n");
     }
-    fprintf(stderr, "\n");
     MPI_Finalize();
     return 0;
 }

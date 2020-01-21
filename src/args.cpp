@@ -49,7 +49,7 @@ void Args::parseArgs(const std::vector<std::string> &args) {
         try {
             if (args[ai] == "-h") {
                 std::cerr << "Here is the help! Usage:" << std::endl;
-                printHelp();
+                Args::printHelp();
                 exit(EXIT_FAILURE);
             } else if (args[ai] == "-input") {
                 input = std::string(args.at(ai + 1));
@@ -78,7 +78,7 @@ void Args::parseArgs(const std::vector<std::string> &args) {
             }
         } catch (std::out_of_range) {
             std::cerr << args[ai] << " is missing an argument" << std::endl;
-            printHelp();
+            Args::printHelp();
             exit(EXIT_FAILURE);
         }
     }
