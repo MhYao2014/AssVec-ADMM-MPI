@@ -22,6 +22,7 @@ I decide to adopt makefile to compile and link my scripts.
 The header and source files are in the "src" folder.
 To build a project form these scripts, simply use the command,
 ```
+cd build
 make
 ```
 , in the command line. 
