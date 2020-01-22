@@ -1,9 +1,12 @@
 # AssVec-ADMM-MPI
 The admm version of AssVec model. Implemented based on openmpi and openmp. 
+
 Conceptually, openmpi will open a bunch of processes to handle different groups of training corpus. Each process will open another bunch of threads to apply the Hogwild! optimizer to each training corpus in this group.
 The processes don't share the memory with each other, while threads within the same process do.
+
 In my case, I have access to USTC's supercomputer clusters, which have enough cores for me.
 I used 18 processes with 28 threads each process, which sums up to 504 cores totally, to train the word vectors for the top 100000 frequent words. I sincerely hope that I can have access to 100000 cores.
+
 How to determine the number of processes and threads? The principle is to make sure that each training corpus groups are roughly the same size so that no cores will wait too long for other cores. The groupData.cc can help you figure out how to decide these numbers. How to use it? This file will explain for itself if you know how to compile it into an executable and use the -h flag.
 ## Pipeline
 There are three steps to train the AssVec model from the scratch.
@@ -15,9 +18,10 @@ I decide to adopt makefile to compile and link my scripts.
 + If you do not know what is makefile, you may want to learn this tool firstly.
 + Try to figure out the concepts of "assembly code", "objective file", "machine code", "preprocess", "compile/compiler" and "link/linker", and then you will understand what's going on in the makefile.
 The header and source files are in the "src" folder.
-To build a project form these scripts, simply use the command
+To build a project form these scripts, simply use the command,
 ```
 make
 ```
-in the command line. 
+, in the command line. 
+
 Then, the makefile will put the executable of AssVec and a bunch of other objective files into the build folder. The AssVec executable is all you need. You can decide where to put building results by modifying the makefile. How? Google it.
