@@ -11,7 +11,8 @@ How to determine the number of processes and threads? The principle is to make s
 ## Pipeline
 There are three steps to train the AssVec model from the scratch.
 + Step 1. Collect a cleaned training corpus from the web. You don't have to remove the punctuation or make one sentence per line in this single training corpus file. Then, you run the dictionary executable to build the vocabulary. If the size of this vocabulary is 100000, then this executable will also split the original training corpus file into 100000 files, where each file corresponds to a word and is named after with this word's index in the vocabulary. Each file records the unigram concurrent statistics in the original training corpus (with words' vocab index recorded). The graph bellow illustrates the general idea in this step.
-![image](http://github.com/MhYao2014/AssVec-ADMM-MPI/images/stempOne.png)
+
+![image](https://github.com/MhYao2014/AssVec-ADMM-MPI/blob/master/images/stempOne.png)
 + Step 2. Group your files based on your machine's total core numbers and architecture. Because the word frequence obeys Zipf's law, therefore the files will also have a very unbalanced size distribution. For example, 1.1G for the largest file, while 5M for the smallest one. Each file is a subproblem that should be solved parallelly by different processes. However, due to the limit amounts of cores we can access, we have to gather the files into roughly same size groups so that each group is solved parallelly. In contrast, each file is handled serially within each group. You can use the groupData.cc script to help you determine a suitable number of groups.
 + Step 3. Based on your groups'total number (which is the total processes number) and the available cores, decide how many threads each process should have. Then, run the AssVec executable on your machine using these two numbers.
 ## How to build this project
