@@ -6,6 +6,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
 #include "args.h"
 #include "dictionary.h"
 #include "matrix.h"
@@ -151,7 +152,14 @@ int main(int argc, char**argv) {
         Output.addMatrix(Communicate, 1);
     }
     // 阻断直到所有slave进程都收到了数据并初始化成功
-
+    MPI_Barrier(MPI_COMM_WORLD);
+    std::string Gtemp;
+    int VecId;
+    for (int64_t i=0; i<Groups[rank].FileNum; i++) {
+        VecId = Groups[rank].FileNames[i];
+        Gtemp = std::to_string(VecId);
+        std::cout << "Rank" << rank << "File" << Gtemp << ":" << Catch.at(VecId,10) << std::endl;
+    }
     //执行ADMM迭代
         // 每个进程遍历自己分组中的各个文件,
             // 依靠多线程并行(openmp)迭代固定次数,求解子问题(各个文件),
