@@ -11,7 +11,7 @@
 
 Matrix::Matrix(): row_(0), col_(0) {}
 
-Matrix::Matrix(int64_t row, int64_t col): row_(row), col_(col) {}
+Matrix::Matrix(int64_t row, int64_t col): row_(row), col_(col) ,data_(row * col){}
 
 void Matrix::zero() {
     std::fill(data_.begin(), data_.end(), 0.0);

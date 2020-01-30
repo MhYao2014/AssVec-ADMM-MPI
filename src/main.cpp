@@ -2,11 +2,12 @@
 // Created by mhyao on 20-1-9.
 //
 #include <mpi.h>
-#include <omp.h>
+//#include <omp.h>
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
+#include <unistd.h>
 #include "args.h"
 #include "dictionary.h"
 #include "matrix.h"
@@ -105,26 +106,35 @@ int main(int argc, char**argv) {
     // 统计所有语料文件的大小,按照大小合理分组语料文件,使得各组训练语料大小大致相同.
     // 并读取进程数量,进程数量即为分组数量
     int GroupNum;
-    long long FileNum=100000;
+    long long FileNum=1223;
     MPI_Comm_size(MPI_COMM_WORLD, &GroupNum);
     // 定义分组情况的数组, 而后分别存储,一个进程领取一个元素
     std::vector<GSIZE> Groups;
     // 开始统计分组情况
     SplitGroups(Groups,FileNum,GroupNum);
     // 主进程输出分组情况
-    if (rank == 0) {
-        fprintf(stderr,"\nThe %dth Group's size is %lld M. It has %lld files. Including:\n\n\t",rank,Groups[rank].TotalSize / 1020 / 1020,Groups[rank].FileNum);
-        for (long long j=0; j < Groups[rank].FileNames.size(); j++) {
-            fprintf(stderr, "%lld ", Groups[rank].FileNames[j]);
-        }
-        fprintf(stderr, "\n");
-    }
+//    if (rank == 0) {
+//        fprintf(stderr,"\nThe %dth Group's size is %lld M. It has %lld files. Including:\n\n\t",rank,Groups[rank].TotalSize / 1020 / 1020,Groups[rank].FileNum);
+//        for (long long j=0; j < Groups[rank].FileNames.size(); j++) {
+//            fprintf(stderr, "%lld ", Groups[rank].FileNames[j]);
+//        }
+//        fprintf(stderr, "\n");
+//    }
+//    // 各进程等待调试
+    volatile int i = 0;
+    char hostname[256];
+    gethostname(hostname, sizeof(hostname));
+    printf("Process %d PID %d on %s ready for attach\n", rank,getpid(), hostname);
+    fflush(stdout);
+//    while (0 == i) {
+//        sleep(5);
+//    }
     // 各个进程初始化自己的模型参数,创建训练对象,随机初始化input vec参数,
     Matrix Input(Groups[rank].FileNum, arguments.dim);
     Input.uniform(0.1);// 随机初始化input vec参数
-    Matrix Output(100000, arguments.dim);// 工作数组
-    Matrix Communicate(100000,arguments.dim);// 通信数组
-    Matrix Catch(100000, arguments.dim);// 缓存数组
+    Matrix Output(1223, arguments.dim);// 工作数组
+    Matrix Communicate(1223, arguments.dim);// 通信数组
+    Matrix Catch(1223, arguments.dim);// 缓存数组
     if (rank != 0) {
         // 非主进程，初始化为0,通信数组累加本分组的参数
         Output.zero();
@@ -133,8 +143,8 @@ int main(int argc, char**argv) {
     if (rank == 0) {
         // 主进程随机初始化output vec参数,
         Communicate.uniform(0.1);
-        //开始主进程通信：将主进程的通信数组分配到各个slave进程中的通信数组中去
-        MPI_Bcast(&Communicate,100000*arguments.dim,MPI_DOUBLE,0,MPI_COMM_WORLD);
+        // 开始主进程通信：将主进程的通信数组分配到各个slave进程中的通信数组中去
+        MPI_Bcast(Communicate.data(),1223*arguments.dim,MPI_DOUBLE,0,MPI_COMM_WORLD);
         // 将通信数组拷贝到缓存数组和工作数组中去,
         Catch.zero();
         Catch.addMatrix(Communicate,1);
@@ -144,7 +154,7 @@ int main(int argc, char**argv) {
     // slave进程会先结束，从而先开始运行此段代码
     // slave开始等待主进程发送消息,统一采用阻塞通信
     if (rank != 0) {
-        MPI_Bcast(&Communicate,100000*arguments.dim,MPI_DOUBLE,0,MPI_COMM_WORLD);
+        MPI_Bcast(Communicate.data(),1223*arguments.dim,MPI_DOUBLE,0,MPI_COMM_WORLD);
         // 将通信数组拷贝到缓存数组和工作数组中去,
         Catch.zero();
         Catch.addMatrix(Communicate,1);
@@ -153,13 +163,6 @@ int main(int argc, char**argv) {
     }
     // 阻断直到所有slave进程都收到了数据并初始化成功
     MPI_Barrier(MPI_COMM_WORLD);
-    std::string Gtemp;
-    int VecId;
-    for (int64_t i=0; i<Groups[rank].FileNum; i++) {
-        VecId = Groups[rank].FileNames[i];
-        Gtemp = std::to_string(VecId);
-        std::cout << "Rank" << rank << "File" << Gtemp << ":" << Catch.at(VecId,10) << std::endl;
-    }
     //执行ADMM迭代
         // 每个进程遍历自己分组中的各个文件,
             // 依靠多线程并行(openmp)迭代固定次数,求解子问题(各个文件),

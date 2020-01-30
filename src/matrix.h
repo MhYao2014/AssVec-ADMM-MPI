@@ -21,7 +21,7 @@ public:
     virtual ~Matrix() noexcept = default;
 
     // 常用方法合集
-    // 访问元素,行内表达式
+    // 返回指向vector内存首地址的指针
     inline double * data() {
         return data_.data();
     }
