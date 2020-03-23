@@ -1,18 +1,21 @@
 //
-// Created by mhyao on 20-1-10.
+// Created by mhyao on 2020/2/25.
 //
 #pragma once
 #define TSIZE 1048576
-#define SEED  1159241
+#define SEED 1159241
 #define MaxWordLen 1000
-#define HASHFN  HashValue
+#define HASHFN hashValue
 
 #include <iostream>
 #include <stdlib.h>
 #include <memory>
+#include <string>
+#include <vector>
+
 #include "args.h"
 
-typedef struct VocabHashWithId {
+typedef struct VocabHashWithId{
     char *Word;
     long long Count;
     long long id;
@@ -20,95 +23,55 @@ typedef struct VocabHashWithId {
 } HASHUNITID;
 
 typedef struct VocabUnit {
-    char *Word;
+    char * Word;
     long long Count;
 } ARRAYUNIT;
 
-class Dictionary {
-protected:
-    Args args_;
-    long long RealVocabSize;
-    unsigned int HashValue(char *word, int tsize, unsigned int seed);
-    void HashMapWord(char *Word, HASHUNITID **VocabHash);
-    int GetWord(FILE *CorpusFile, char *Word);
-    long long HashToArray(HASHUNITID **VocabHash, ARRAYUNIT *VocabArray, long long VocabSize);
-    void CutVocab(ARRAYUNIT *VocabArray, long long VocabSize);
-    void FillIdToVocabHash(ARRAYUNIT *VocabArray, HASHUNITID **VocabHash);
-    void GetLine(FILE *CorpusSplit, std::vector<long long> &line);
-//    int GetFileSize();
-public:
-    HASHUNITID ** VocabHash;
-    explicit Dictionary(Args args);
-    long long HashSearch(char *Word, HASHUNITID **VocabHash);
-    void BuildVocab(FILE *CorpusFile, HASHUNITID **VocabHash);
-    HASHUNITID ** Init(int Tsize);
-    long long GetWordId(char *Word);
-    void SplitCorpus();
-};
+typedef struct FileGroup {
+    long long TotalSize;
+    std::vector<long long> FileNames;
+    long long FileNum;
+} GSIZE;
 
-//#include <stdio.h>
-//#include <fstream>
-//#include "dictionary.h"
-//#include "args.h"
-//#include "/usr/local/openmpi/include/mpi.h"
-//int main(int argc, char**argv) {
-//    // 从命令行读取参数
-//    std::vector<std::string> args(argv, argv + argc);
-//    Args arguments = Args();
-//    if (args.size() < 2) {
-//        arguments.printHelp();
-//        exit(EXIT_FAILURE);
-//    }
-//    arguments.parseArgs(args);
-//    // root进程首先统计原始语料的词频,建立词典
-//    // 并且给每个词按照词频从大到小赋予编号
-//    // 首先检查能否打开原始训练语料
-//    std::ifstream CorpusCheck(arguments.input);
-//    if (!CorpusCheck.is_open()) {
-//        throw std::invalid_argument(arguments.input + "cannot be opened for training");
-//    }
-//    CorpusCheck.close();
-//    // 初始化一个词典,并建立词表
-//    // 并且给每个词按照词频从大到小赋予编号
-//    Dictionary dict(arguments);
-//    // 记得释放内存，避免内存泄漏
-//
-//    // 接着主节点从原始语料中,分词汇,
-//    // 逐词抽取训练语料.具体而言,
-//    // 每个词汇的训练语料为所有出现在该词汇词窗
-//    // 中的单词的编号.同一个词窗的编号占一行.
-//    dict.SplitCorpus();
-//    HASHUNITID *htmp= NULL,*hpre= NULL;
-//    for (int i=0;i<TSIZE;i++) {
-//        if (dict.VocabHash[i] != NULL) {
-//            htmp = dict.VocabHash[i];
-//            while (htmp != NULL) {
-//                free(htmp->Word);
-//                hpre = htmp;
-//                htmp = htmp->next;
-//                free(hpre);
-//                hpre = NULL;//防止hpre变成野指针，随机指向某个内存区域
-//            }
-//        }
-//    }
-//    free(dict.VocabHash);
-//    htmp = NULL;
-//    hpre = NULL;
-//    return 0;
-//}
-//HASHUNITID *htmp= NULL,*hpre= NULL;
-//for (int i=0;i<TSIZE;i++) {
-//if (dict.VocabHash[i] != NULL) {
-//htmp = dict.VocabHash[i];
-//while (htmp != NULL) {
-//free(htmp->Word);
-//hpre = htmp;
-//htmp = htmp->next;
-//free(hpre);
-//hpre = NULL;//防止hpre变成野指针，随机指向某个内存区域
-//}
-//}
-//}
-//free(dict.VocabHash);
-//htmp = NULL;
-//hpre = NULL;
+typedef struct FileSizeUnit {
+    long long FileSize;
+    long long FileName;
+} FSIZE;
+
+class Dictionary {
+private:
+    std::string _corpus_path;
+    long long _min_count;
+    long long _max_vocab;
+    int _if_save_vocab;
+    long long _real_vocab_size;
+    unsigned int hashValue(char *word, int tsize, unsigned int seed);
+    void hashMapWord(char *Word, HASHUNITID **VocabHash);
+    int getWord(FILE *corpusFile, char *word);
+    long long hashToArray(HASHUNITID **vocabHash, ARRAYUNIT * vocabArray, long long vocabSize);
+    void cutVocab(ARRAYUNIT* vocabArray, long long vocabSize);
+    void fillIdToVocabHash(ARRAYUNIT *vocabArray, HASHUNITID ** vocabHash);
+    void getLine(FILE * CorpusSplit, std::vector<long long> &line);
+    long long getWordId(char *Word);
+    long long hashSearch(char *Word);
+public:
+    HASHUNITID ** vocabHash;
+    // todo:修缮splitcorpus成员函数
+    std::vector<GSIZE> groups;
+    explicit Dictionary();
+    ~Dictionary();
+    void setCorpusPath(std::string &corpusPath);
+    void setMinCount(long long minCount);
+    void setMaxVocab(long long maxVocab);
+    void setIfSaveVocab(int ifSaveVocab);
+    void setGroups(std::vector<GSIZE> &Groups);
+    long long getRealVocabSize();
+    void buildVocab();
+    void splitCorpus(Args * p2Args);
+
+    int getNumInt(FILE *p2File, long long &numInt);
+    int getNumEachLine(FILE * p2File,
+                    long long &numInt,
+                    int NotReadSuccess,
+                    std::vector<long long> &WinSamp);
+};

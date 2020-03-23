@@ -37,6 +37,8 @@ public:
     inline int64_t cols() {
         return col_;
     }
+
+    int64_t size();
     // 元素清零
     void zero();
     // 均匀随机初始化
@@ -53,4 +55,12 @@ public:
     void addRowToVector(Vector& vec, int64_t i, double a);
     // 计算矩阵间的加法
     void addMatrix(Matrix& mat, double a);
+    // 计算与一个拉直矩阵的加法
+    void addFlatMatrix(Matrix& mat, double a, int Id);
+    // 保存矩阵
+    void saveMat2Row(int Id, Matrix &mat);
+    // 把一个矩阵加到自己的某一行中
+    void addMat2Row(Matrix &mat, int Id, double a);
+    // 把矩阵的某一行加到另一个矩阵的另一行
+    void addRow2Row(Matrix &mat, int selfId, int Id, double a);
 };

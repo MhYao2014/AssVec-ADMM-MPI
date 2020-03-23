@@ -81,3 +81,33 @@ void Matrix::addMatrix(Matrix &mat, double a) {
         data_[j] += a * mat.data_[j];
     }
 }
+
+void Matrix::addFlatMatrix(Matrix &mat, double a, int rowId){
+    // 这里没有检查是否会越界。传入的mat其实是一个张量。
+    for (int64_t j = 0; j < mat.col_; j++) {
+        data_[j] += a * mat.data_[rowId * mat.col_ + j];
+    }
+}
+
+void Matrix::saveMat2Row(int rowId, Matrix &mat) {
+    for (int64_t j = 0; j < mat.data_.size(); j++) {
+        data_[col_ * rowId + j] = mat.data_[j];
+    }
+}
+
+void Matrix::addMat2Row(Matrix &mat, int rowId, double a) {
+    for (int64_t j = 0; j < mat.data_.size(); j++) {
+        data_[col_ * rowId + j] += a * mat.data_[j];
+    }
+}
+
+void Matrix::addRow2Row(Matrix &mat, int selfRowId, int rowId, double a) {
+    assert(col_ == mat.cols());
+    for (int64_t j = 0; j < mat.cols(); j++) {
+        data_[col_ * selfRowId + j] += a * mat.data_[mat.cols() * rowId + j];
+    }
+}
+
+int64_t Matrix::size() {
+    return data_.size();
+}

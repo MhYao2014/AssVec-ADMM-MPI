@@ -10,19 +10,25 @@
 
 class Args {
 public:
-    Args();
     std::string input;
     std::string output;
-    int IfSaveVocab;
+    std::string hardware;
+    std::string loss;
+    int ifSaveVocab;
+    int ifSplitCorpus;
+    int minCount;
+    int maxVocab;
+    std::string vocabSavePath;
     double lr;
+    double rhoOut;
     int lrUpdateRate;
     int dim;
     int ws;
     int epoch;
-    int minCount;
-    int maxVocab;
+    int subProblemEpoch;
     int neg;
-    int thread;
-    void parseArgs(const std::vector<std::string>& args);
+    std::string vecSavePath;
+    explicit Args();
+    bool parseArgs(int argc,const std::vector<std::string>& args);
     void printHelp();
 };
