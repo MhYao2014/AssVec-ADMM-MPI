@@ -6,7 +6,7 @@
 #include "Loss.h"
 #endif
 #include "matrix.h"
-#include "vector.h"
+#include "gradmanager.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,17 +23,6 @@ private:
     Matrix * p2Output;
     Matrix * p2Communicate;
     Matrix * p2Globe;
-    class GradManager {
-    public:
-        std::minstd_rand rng;
-        long long inId;
-        Vector inputGrad;
-        Vector inputVec;
-        Vector outputGrad;
-        Vector outputVec;
-        double lossSG;
-        GradManager(int dim, int seed);
-    };
     void initNegAndUniTable(Dictionary * p2Dict);
     bool IfOneEpoch(FILE *p2File, int threadId, int threadNum);
     bool IfKeepTrain();

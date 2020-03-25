@@ -22,14 +22,7 @@ SkipGramMpiOpenmp::SkipGramMpiOpenmp():dim(100),
                                         p2Communicate(NULL),
                                         p2Globe(NULL),
                                         Loss() {}
-
-SkipGramMpiOpenmp::GradManager::GradManager(int dim, int seed):inputGrad(dim),
-                                                                inputVec(dim),
-                                                                outputGrad(dim),
-                                                                outputVec(dim),
-                                                                rng(seed),
-                                                                inId(0),
-                                                                lossSG(0) {}
+                                        
 
 void SkipGramMpiOpenmp::initVariables(Dictionary *p2Dict, Args *p2Args, int rank) {
     // 设定矩阵行和列的大小
