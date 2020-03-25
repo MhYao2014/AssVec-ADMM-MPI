@@ -28,5 +28,5 @@ set(HEADER_FILES
 
 add_library(AssVec-shared SHARED ${SOURCE_FILES} ${HEADER_FILES})
 add_library(AssVec-static STATIC ${SOURCE_FILES} ${HEADER_FILES})
-add_executable(AssVec src/main.cpp)
+add_executable(AssVec ../src/main.cpp)
 target_link_libraries(AssVec AssVec-static ${MPI_CXX_LIBRARIES})
