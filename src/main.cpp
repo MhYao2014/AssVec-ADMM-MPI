@@ -12,8 +12,6 @@
 
 #include "args.h"
 #include "dictionary.h"
-#include "matrix.h"
-#include "vector.h"
 #include "LossFactory.h"
 
 

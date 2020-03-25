@@ -12,16 +12,17 @@
 #include <mpi.h>
 #include <omp.h>
 
-SkipGramMpiOpenmp::SkipGramMpiOpenmp():dim(100),
-                                        vocabSize(10000),
-                                        lossSG(0.0),
-                                        p2Input(NULL),
-                                        p2Dual(NULL),
-                                        p2SubProSolution(NULL),
-                                        p2Output(NULL),
-                                        p2Communicate(NULL),
-                                        p2Globe(NULL),
-                                        Loss() {}
+SkipGramMpiOpenmp::SkipGramMpiOpenmp():Loss() {
+    dim = 100;
+    vocabSize = 10000;
+    lossSG = 0.0;
+    p2Input = NULL;
+    p2Dual = NULL;
+    p2Globe = NULL;
+    p2Output = NULL;
+    p2SubProSolution = NULL;
+    p2Communicate = NULL;
+}
 
 
 void SkipGramMpiOpenmp::initVariables(Dictionary *p2Dict, Args *p2Args, int rank) {
@@ -80,7 +81,7 @@ void SkipGramMpiOpenmp::train(Dictionary *p2Dict, Args *p2Args, int rank) {
         for (int i = 0; i < p2Dict->groups[rank].FileNum; i++) {
             #pragma omp parallel default(none), shared(i, p2Dict, p2Args, rank), firstprivate(tempId, NotReadSuccess, tempWinSamp), private(tempFileName, p2File)
             {
-                GradManager gradManager = GradManager(p2Args->dim, rank); // firstprivate
+                GradManager gradManager = GradManager(p2Args->dim, rank);
                 tempFileName = (long long) i; //根据进程rank找到自己的文件分组，然后遍历其中各个文件。这里后期需要补充一个映射关系
                 gradManager.inputVec.zero(); // 取出对应的input向量
                 p2Input->addRowToVector(gradManager.inputVec, tempFileName, 1.0);
