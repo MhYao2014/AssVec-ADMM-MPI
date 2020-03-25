@@ -1,7 +1,7 @@
 cc = mpicc
 
-AssVec: ../src/main.cpp args.o matrix.o vector.o dictionary.o LossFactory.o gradmanager.o SkipGramMpiOpenmp.o
-	$(cc) -o AssVec -std=c++11 -fopenmp ../src/main.cpp args.o matrix.o vector.o dictionary.o LossFactory.o gradmanager.o SkipGramMpiOpenmp.o
+AssVec: ../src/main.cpp args.o matrix.o vector.o dictionary.o LossFactory.o gradmanager.o skip-gram-mpi-openmp.o
+	$(cc) -o AssVec -std=c++11 -fopenmp ../src/main.cpp args.o matrix.o vector.o dictionary.o LossFactory.o gradmanager.o skip-gram-mpi-openmp.o
 
 #AssVec: ../src/main.cpp args.o matrix.o vector.o
 #	${cc} -g -o AssVec -std=c++11 ../src/main.cpp args.o matrix.o vector.o
@@ -27,8 +27,8 @@ LossFactory.o: ../src/LossFactory.cpp
 gradmanager.o: ../src/gradmanager.cpp
 	g++ -std=c++11 -c ../src/gradmanager.cpp
 
-#SkipGramMpiOpenmp.o: ../src/skip-gram-mpi-openmp.cpp args.o matrix.o vector.o dictionary.o Loss.o LossFactory.o
+#skip-gram-mpi-openmp.o: ../src/skip-gram-mpi-openmp.cpp args.o matrix.o vector.o dictionary.o Loss.o LossFactory.o
 #	$(cc) -std=c++11 -fopenmp ../src/skip-gram-mpi-openmp.cpp args.o matrix.o vector.o dictionary.o Loss.o LossFactory.o
 
-SkipGramMpiOpenmp.o: ../src/skip-gram-mpi-openmp.cpp args.o matrix.o vector.o dictionary.o gradmanager.o
+skip-gram-mpi-openmp.o: ../src/skip-gram-mpi-openmp.cpp args.o matrix.o vector.o dictionary.o gradmanager.o
 	$(cc) -std=c++11 -c -fopenmp ../src/skip-gram-mpi-openmp.cpp args.o matrix.o vector.o dictionary.o gradmanager.o
