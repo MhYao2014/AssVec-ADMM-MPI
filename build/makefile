@@ -25,7 +25,7 @@ LossFactory.o: ../src/LossFactory.cpp
 	g++ -std=c++11 -c ../src/LossFactory.cpp
 
 gradManager.o: ../src/gradmanager.cpp
-    g++ -std=c++11 -c ../src/gradmanager.cpp
+	g++ -std=c++11 -c ../src/gradmanager.cpp
 
 #SkipGramMpiOpenmp.o: ../src/skip-gram-mpi-openmp.cpp args.o matrix.o vector.o dictionary.o Loss.o LossFactory.o
 #	$(cc) -std=c++11 -fopenmp ../src/skip-gram-mpi-openmp.cpp args.o matrix.o vector.o dictionary.o Loss.o LossFactory.o
