@@ -86,10 +86,10 @@ void SkipGramMpiOpenmp::train(Dictionary *p2Dict, Args *p2Args, int rank) {
     for (int epo = 0; epo < p2Args->epoch; epo++) {// 总的ADMM迭代轮数
         // 每个进程遍历自己分组中的各个文件,
         for (int i = 0; i < p2Dict->groups[rank].FileNum; i++) {
-        #pragma omp parallel default(none), \
-        shared(i, p2Dict, p2Args, rank, p2Input, p2Output), \
-        firstprivate(tempId, NotReadSuccess, tempWinSamp, gradManager), \
-        private(tempFileName, p2File)
+            #pragma omp parallel default(none), \
+            shared(i, p2Dict, p2Args, rank, p2Input, p2Output), \
+            firstprivate(tempId, NotReadSuccess, tempWinSamp, gradManager), \
+            private(tempFileName, p2File)
             {
                 tempFileName = (long long) i; //根据进程rank找到自己的文件分组，然后遍历其中各个文件。这里后期需要补充一个映射关系
                 gradManager.inputVec.zero(); // 取出对应的input向量
