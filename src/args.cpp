@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <stdio.h>
+#include <stdexcept>
 
 Args::Args() {
     ifSaveVocab = 1;
