@@ -20,11 +20,9 @@ public:
     explicit Loss();
     virtual ~Loss() = default;
 
-    virtual void initVariables(Dictionary *p2Dict, Args *p2Args);
+    virtual void initVariables(Dictionary *p2Dict, Args *p2Args, int rank) = 0;
 
-    virtual void initVariables(Dictionary *p2Dict, Args *p2Args, int rank);
-
-    virtual void train(Dictionary *p2Dict, Args *p2Args, int rank);
+    virtual void train(Dictionary *p2Dict, Args *p2Args, int rank) = 0;
 
     double sigmoid(double x);
 

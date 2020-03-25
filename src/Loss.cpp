@@ -46,13 +46,13 @@ long long Loss::getNegative(long long id, std::minstd_rand &rng) {
     return negative;
 }
 
-long size(FILE * p2File) {
+long Loss::size(FILE * p2File) {
     std::fseek(p2File, 0, SEEK_END);
     long size = ftell(p2File);
     return size;
 }
 
-void seek(std::ifstream& ifs, int64_t pos) {
+void Loss::seek(std::ifstream& ifs, int64_t pos) {
     ifs.clear();
     ifs.seekg(std::streampos(pos));
 }
