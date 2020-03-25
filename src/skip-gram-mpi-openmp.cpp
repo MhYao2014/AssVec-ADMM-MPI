@@ -87,7 +87,7 @@ void SkipGramMpiOpenmp::train(Dictionary *p2Dict, Args *p2Args, int rank) {
         // 每个进程遍历自己分组中的各个文件,
         for (int i = 0; i < p2Dict->groups[rank].FileNum; i++) {
             #pragma omp parallel default(none), \
-            shared(i, p2Dict, p2Args, rank, p2Input, p2Output), \
+            shared(i, p2Dict, p2Args, rank), \
             firstprivate(tempId, NotReadSuccess, tempWinSamp, gradManager), \
             private(tempFileName, p2File)
             {
