@@ -31,4 +31,4 @@ gradmanager.o: ../src/gradmanager.cpp
 #	$(cc) -std=c++11 -fopenmp ../src/skip-gram-mpi-openmp.cpp args.o matrix.o vector.o dictionary.o Loss.o LossFactory.o
 
 SkipGramMpiOpenmp.o: ../src/skip-gram-mpi-openmp.cpp args.o matrix.o vector.o dictionary.o gradmanager.o
-	$(cc) -std=c++11 -fopenmp ../src/skip-gram-mpi-openmp.cpp args.o matrix.o vector.o dictionary.o gradmanager.o
+	$(cc) -std=c++11 -c -fopenmp ../src/skip-gram-mpi-openmp.cpp args.o matrix.o vector.o dictionary.o gradmanager.o
