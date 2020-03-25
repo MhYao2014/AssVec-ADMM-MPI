@@ -1,13 +1,17 @@
 //
 // Created by mhyao on 2020/2/6.
 //
+#ifndef _LOSS_H_
+#define _LOSS_H_
+#include "Loss.h"
+#endif
+#include "args.h"
 
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
-#include "args.h"
-#include "Loss.h"
+
 
 class LossFactory {
 private:
