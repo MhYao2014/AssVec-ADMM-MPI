@@ -1,7 +1,10 @@
 //
 // Created by mhyao on 2020/2/10.
 //
+#ifndef _LOSS_H_
+#define _LOSS_H_
 #include "Loss.h"
+#endif
 #include "matrix.h"
 #include "vector.h"
 
