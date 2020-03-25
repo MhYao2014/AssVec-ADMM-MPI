@@ -73,14 +73,14 @@ void SkipGramMpiOpenmp::train(Dictionary *p2Dict, Args *p2Args, int rank) {
     long long tempFileName; // private
     FILE *p2File; // private
     std::vector<long long> tempWinSamp; // firstprivate
-    GradManager gradManager = GradManager(p2Args->dim, rank); // firstprivate
     int NotReadSuccess = 0; // firstprivate
     long long tempId = 0; // firstprivate。这个tempId是getNumEachLine要求的一个零时变量。没设计好这一块。
     for (int epo = 0; epo < p2Args->epoch; epo++) {// 总的ADMM迭代轮数
         // 每个进程遍历自己分组中的各个文件,
         for (int i = 0; i < p2Dict->groups[rank].FileNum; i++) {
-            #pragma omp parallel default(none), shared(i, p2Dict, p2Args, rank), firstprivate(tempId, NotReadSuccess, tempWinSamp), private(tempFileName, p2File,gradManager)
+            #pragma omp parallel default(none), shared(i, p2Dict, p2Args, rank), firstprivate(tempId, NotReadSuccess, tempWinSamp), private(tempFileName, p2File)
             {
+                GradManager gradManager = GradManager(p2Args->dim, rank); // firstprivate
                 tempFileName = (long long) i; //根据进程rank找到自己的文件分组，然后遍历其中各个文件。这里后期需要补充一个映射关系
                 gradManager.inputVec.zero(); // 取出对应的input向量
                 p2Input->addRowToVector(gradManager.inputVec, tempFileName, 1.0);
