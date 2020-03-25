@@ -22,7 +22,7 @@ SkipGramMpiOpenmp::SkipGramMpiOpenmp():dim(100),
                                         p2Communicate(NULL),
                                         p2Globe(NULL),
                                         Loss() {}
-                                        
+
 
 void SkipGramMpiOpenmp::initVariables(Dictionary *p2Dict, Args *p2Args, int rank) {
     // 设定矩阵行和列的大小
@@ -73,7 +73,7 @@ void SkipGramMpiOpenmp::train(Dictionary *p2Dict, Args *p2Args, int rank) {
     long long tempFileName; // private
     FILE *p2File; // private
     std::vector<long long> tempWinSamp; // firstprivate
-    GradManager gradManager(p2Args->dim, rank); // firstprivate
+    GradManager gradManager = GradManager(p2Args->dim, rank); // firstprivate
     int NotReadSuccess = 0; // firstprivate
     long long tempId = 0; // firstprivate。这个tempId是getNumEachLine要求的一个零时变量。没设计好这一块。
     for (int epo = 0; epo < p2Args->epoch; epo++) {// 总的ADMM迭代轮数
@@ -196,7 +196,7 @@ void SkipGramMpiOpenmp::lossEachWin(Dictionary *p2Dict,
 }
 
 double SkipGramMpiOpenmp::binaryLogistic(long long outId,
-                                         SkipGramMpiOpenmp::GradManager &gradManager,
+                                         GradManager &gradManager,
                                          bool labelIsPositive,
                                          Args *p2Args) {
     double score = sigmoid(p2Output->dotRow(gradManager.inputVec,outId,1.0));
