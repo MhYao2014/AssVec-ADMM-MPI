@@ -36,13 +36,13 @@ int FindMinIndex(std::vector<GSIZE> &Groups, int ArraySize) {
     return MinIndex;
 }
 
-void SplitGroups(std::vector<GSIZE> &Groups, long long FileNum, int GroupNum) {
+void SplitGroups(Args * p2Args, std::vector<GSIZE> &Groups, long long FileNum, int GroupNum) {
     // 初始化文件数组大小
     auto FileSizeArray = (FSIZE *) malloc(sizeof(FSIZE) * FileNum);
     FILE * ftmp = NULL;
     for (long long i=0; i < FileNum; i++) {
         // 逐个打开文件
-        ftmp = fopen(std::to_string(i).c_str(),"r");
+        ftmp = fopen((p2Args->vocabPath + "/" + std::to_string(i)).c_str(),"r");
         // 判断是否打开成功
         if (ftmp == NULL) {
             throw "Failed to open file";
@@ -115,6 +115,7 @@ int main(int argc, char**argv) {
     if (rank == 0 && arguments.ifSplitCorpus == 1) { // 只需要一个进程分割文件间就可以了
         dict.splitCorpus(&arguments);
     }
+    MPI_Barrier(MPI_COMM_WORLD);
     // 统计语料分组情况
     // 统计所有语料文件的大小,按照大小合理分组语料文件,使得各组训练语料大小大致相同.
     // 并读取进程数量,进程数量即为分组数量
@@ -124,7 +125,7 @@ int main(int argc, char**argv) {
     // 定义分组情况的数组, 而后分别存储,一个进程领取一个元素
     std::vector<GSIZE> Groups;
     // 开始统计分组情况
-    SplitGroups(Groups,FileNum,GroupNum);
+    SplitGroups(&arguments,Groups,FileNum,GroupNum);
     // 将分组情况塞到字典中去
     dict.setGroups(Groups);
     // myLoss开始初始化和训练

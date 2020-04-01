@@ -32,7 +32,7 @@ void SkipGramMpiOpenmp::initVariables(Dictionary *p2Dict, Args *p2Args, int rank
     p2Input->uniform(0.1);
     p2Dual = new Matrix(p2Dict->groups[rank].FileNum,dim*vocabSize);
     p2Dual->uniform(0.1);
-    p2SubProSolution = new Matrix(vocabSize, dim);
+    p2SubProSolution = new Matrix(p2Dict->groups[rank].FileNum,dim*vocabSize);
     p2Output = new Matrix(vocabSize,dim);
     p2Communicate = new Matrix(vocabSize, dim);
     p2Globe = new Matrix(vocabSize, dim);
@@ -67,7 +67,7 @@ void SkipGramMpiOpenmp::initVariables(Dictionary *p2Dict, Args *p2Args, int rank
 void SkipGramMpiOpenmp::train(Dictionary *p2Dict, Args *p2Args, int rank) {
     initNegAndUniTable(p2Dict); // 初始化负采样表。该表位于字典内。
     FILE *p2Record;
-    p2Record = fopen(("rank" + std::to_string(rank)).c_str(),"w");
+    p2Record = fopen(("LossRank" + std::to_string(rank) + ".txt").c_str(),"w");
     // 执行ADMM迭代
     long long tempFileName; // private
     FILE *p2File; // private
@@ -78,26 +78,38 @@ void SkipGramMpiOpenmp::train(Dictionary *p2Dict, Args *p2Args, int rank) {
         // 每个进程遍历自己分组中的各个文件,
         for (int i = 0; i < p2Dict->groups[rank].FileNum; i++) {
             #pragma omp parallel default(none), \
-            shared(i, p2Dict, p2Args, rank), \
+            shared(i, p2Dict, p2Args, rank, std::cerr), \
             firstprivate(tempId, NotReadSuccess, tempWinSamp), \
             private(tempFileName, p2File)
             {
                 GradManager gradManager = GradManager(p2Args->dim, rank);
-                tempFileName = (long long) i; //根据进程rank找到自己的文件分组，然后遍历其中各个文件。这里后期需要补充一个映射关系
                 gradManager.inputVec.zero(); // 取出对应的input向量
-                p2Input->addRowToVector(gradManager.inputVec, tempFileName, 1.0);
-                gradManager.inId = tempFileName;
+                p2Input->addRowToVector(gradManager.inputVec, i, 1.0);
+                gradManager.inId = i;
+                tempFileName = (long long) p2Dict->groups[rank].FileNames[i]; //根据进程rank找到自己的文件分组，然后遍历其中各个文件。这里后期需要补充一个映射关系
+                gradManager.inDictId = tempFileName;
                 // 打开tempFileName词对应的训练数据文件;
-                p2File = fopen(std::to_string(tempFileName).c_str(), "r");
+                p2File = fopen((p2Args->vocabPath + "/" + std::to_string(tempFileName)).c_str(), "r");
                 if (p2File == NULL) {throw "Failed to open training file";} // 判断是否打开成功
                 //将各个线程定位到各自的文件块位置
                 int threadId = omp_get_thread_num(), threadNum= omp_get_num_threads();
                 std::fseek(p2File, threadId * size(p2File) / threadNum, SEEK_SET);
+                // Hogwild!算法要求步长逐步收敛到0,每个文件都从相同的步长开始缩减
+                gradManager.lr = p2Args->lr;
+                int64_t handledTokenNum = 0;
+                gradManager.parallelNum = threadNum;
+                gradManager.TotalToken = p2Dict->vocabArray[tempFileName].Count * p2Args->ws * 2 - 1; // 估算值
+                gradManager.repeatTime = p2Args->subProblemEpoch;
                 // 依靠多线程并行(openmp)实现Hogwild!算法。整体上，进程的各个线程实际是在合作解决同一个子问题(某个训练文件)。采用的是迭代固定次数,早停求解方法。
                 for (int j = 0; j < p2Args->subProblemEpoch; j++) {
                     while (IfOneEpoch(p2File,threadId,threadNum)) {
                         // 逐行读取训练数据,一行是tempFileName对应词为中心词时，一个词窗中的周围词的id。最后将这些id存入tempWinSamp向量中保存。
                         p2Dict->getNumEachLine(p2File, tempId, NotReadSuccess, tempWinSamp);
+                        // 根据handledTokenNum缩减步长
+                        handledTokenNum += tempWinSamp.size();
+                        if (handledTokenNum % p2Args->lrUpdateRate == 0) { // 每lrUpdateRate个样本后更新一次学习率
+                            double process = shrinkLr(gradManager,handledTokenNum);
+                        }
                         if (!tempWinSamp.empty()) {
                             // 计算loss,计算并更新所有梯度
                             SkipGramMpiOpenmp::lossEachWin(p2Dict, p2Args, rank, tempWinSamp, gradManager);
@@ -111,7 +123,6 @@ void SkipGramMpiOpenmp::train(Dictionary *p2Dict, Args *p2Args, int rank) {
             accumuOutput(p2Dict, p2Args, i); // 每求解完一个子问题,就将当前参数累加到通信数组中去
             saveSubProSolution(i); // 把每个子问题的output的解保存下来
             restoreOutput(p2Dict, p2Args); // 将缓存数组中当前ADMM轮数的原始参数复制到工作数组中
-            fclose(p2File);
         }
         // 所有进程的所有子问题求解完毕,同主进程同步通信(缓存数组),平均参数
         MPI_Allreduce(p2Communicate->data(),p2Globe->data(),vocabSize*dim,MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
@@ -129,6 +140,9 @@ void SkipGramMpiOpenmp::train(Dictionary *p2Dict, Args *p2Args, int rank) {
         } else {
             break;
         }
+        if (rank == 0) {
+            std::cerr << "ADMM Epoch:" << epo + 1 << std::endl;
+        }
     }
     // ADMM算法结束,
     // 主进程保存相关数据,和词向量文件
@@ -145,28 +159,30 @@ void SkipGramMpiOpenmp::initNegAndUniTable(Dictionary * p2Dict) {
     double c = 0.0;
     // 遍历哈希链表词典，计算所有的词频加和
     HASHUNITID * htmp = NULL;
-    for (size_t i = 0 ; i < TSIZE; i++) {
+    for (long long i = 0 ; i < TSIZE; i++) {
         if (p2Dict->vocabHash[i] != NULL) {
             htmp = p2Dict->vocabHash[i];
             while (htmp != NULL) {
                 if (htmp->id != -1) {
                     z += pow(htmp->Count, 0.5);
                 }
+                htmp = htmp->next;
             }
         }
     }
     // 按照公式，向负采样表里填入相应个数的id
-    for (size_t i = 0 ; i < TSIZE; i++) {
+    for (long long i = 0 ; i < TSIZE; i++) {
         if (p2Dict->vocabHash[i] != NULL) {
             htmp = p2Dict->vocabHash[i];
             while (htmp != NULL) {
                 if (htmp->id != -1) {
                     c = pow(htmp->Count, 0.5);
+                    // 填入对应个数的id
+                    for (size_t j = 0; j < c * 10000000 / z; j++) {
+                        negatives_.push_back((long long)htmp->id);
+                    }
                 }
-                // 填入对应个数的id
-                for (size_t j = 0; j < c * 10000000 / z; j++) {
-                    negatives_.push_back((long long)htmp->id);
-                }
+                htmp = htmp->next;
             }
         }
     }
@@ -201,10 +217,19 @@ double SkipGramMpiOpenmp::binaryLogistic(long long outId,
                                          GradManager &gradManager,
                                          bool labelIsPositive,
                                          Args *p2Args) {
+    // 强迫各个O^m向O靠拢的负梯度
+    gradManager.outputVec.zero();
+    gradManager.outputVec.addRow(*p2Output,outId,1);
+    gradManager.outputGrad.zero();
+    gradManager.outputGrad.addVector(gradManager.outputVec,-p2Args->rhoOut);
+    gradManager.outputGrad.addRow(*p2Globe,outId,p2Args->rhoOut);
+    gradManager.outputGrad.addRowTensor(*p2Dual,gradManager.inId,outId,-1);
+    // Hogwild!部分的负梯度
     double score = sigmoid(p2Output->dotRow(gradManager.inputVec,outId,1.0));
-    double alpha = p2Args->lr * (double(labelIsPositive) - score);
+    double alpha = gradManager.lr * (double(labelIsPositive) - score);
     gradManager.inputGrad.addRow(*p2Output, outId, alpha);
     p2Output->addVectorToRow(gradManager.inputVec, outId, alpha);
+    p2Output->addVectorToRow(gradManager.outputGrad,outId,gradManager.lr);
     if (labelIsPositive) {
         return -log(score);
     } else {
@@ -255,7 +280,7 @@ bool SkipGramMpiOpenmp::IfKeepTrain() {
 }
 
 void SkipGramMpiOpenmp::recordLoss(FILE * p2Record) {
-    fprintf(p2Record,"%f/n", lossSG);
+    fprintf(p2Record,"%f\n", lossSG);
 }
 
 void SkipGramMpiOpenmp::saveVec(FILE *p2VecFile) {
@@ -267,4 +292,10 @@ void SkipGramMpiOpenmp::saveVec(FILE *p2VecFile) {
         }
         fprintf(p2VecFile, "\n");
     }
+}
+
+double SkipGramMpiOpenmp::shrinkLr(GradManager &gradManager, int64_t handledTokenNum){
+    double process = handledTokenNum / (double) (gradManager.TotalToken * gradManager.repeatTime / gradManager.parallelNum);
+    gradManager.setLr((1 - process) * gradManager.lr);
+    return process;
 }

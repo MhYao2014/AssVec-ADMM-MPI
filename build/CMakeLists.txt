@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.5.1)
 project(AssVec_ADMM_MPI)
 
+set(CMAKE_BUILD_TYPE "Debug")
+set(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g -ggdb ")
+set(CMAKE_PREFIX_PATH "/usr/local/openmpi")
 set(CMAKE_CXX_FLAGS "-fopenmp")
 find_package(MPI)
 include_directories(SYSTEM ${MPI_INCLUDE_PATH})

@@ -74,6 +74,15 @@ void Matrix::addRowToVector(Vector &vec, int64_t i, double a) {
     }
 }
 
+void Matrix::addPart(Vector &vec, int64_t Id, int64_t subId, double a) {
+    assert(Id >= 0);
+    assert(Id < row_);
+    assert(vec.size() + subId <= col_);
+    for (int64_t j = 0; j < vec.size(); j++) {
+        vec[j] += a * data_[Id * row_ + subId + j];
+    }
+}
+
 void Matrix::addMatrix(Matrix &mat, double a) {
     assert(row_ == mat.row_);
     assert(col_ == mat.col_);

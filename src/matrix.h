@@ -53,6 +53,8 @@ public:
     void addVectorToRow(Vector& vec, int64_t i, double a);
     // 计算将某一行加到外部向量上,实现取出某一行的效果
     void addRowToVector(Vector& vec, int64_t i, double a);
+    // 把矩阵的某部分加到另一个向量中
+    void addPart(Vector& vec, int64_t Id, int64_t subId, double a);
     // 计算矩阵间的加法
     void addMatrix(Matrix& mat, double a);
     // 计算与一个拉直矩阵的加法

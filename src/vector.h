@@ -48,4 +48,6 @@ public:
     void addVector(Vector& vec, double a);
     // 计算将矩阵某一行加到外部向量上,实现取出某一行的效果
     void addRow(Matrix& mat, int64_t i, double a);
+    // 计算将张量中的某个向量加到外部向量上
+    void addRowTensor(Matrix& mat, int64_t Id, int64_t subId, double a);
 };

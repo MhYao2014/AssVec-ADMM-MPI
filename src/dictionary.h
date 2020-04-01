@@ -56,6 +56,7 @@ private:
     long long hashSearch(char *Word);
 public:
     HASHUNITID ** vocabHash;
+    ARRAYUNIT * vocabArray;
     // todo:修缮splitcorpus成员函数
     std::vector<GSIZE> groups;
     explicit Dictionary();

@@ -27,6 +27,7 @@ void Args::printHelp() {
     std::cerr << "\nThe following arguments are mandatory:\n"
               << "  -input              training file path\n"
               << "  -output             output vectors path\n"
+              << "  -vocabPath          vocab file path, 结尾不要加入斜杠。\n"
               << "  -hardware           supported hardware condition lists are: [MPI+Openmpi]\n"
               << "  -loss               supported loss model lists are: [SkipGram+MPI+Openmpi]\n"
               << "  -IfSaveVocab        whether save the vocab file\n"
@@ -71,6 +72,8 @@ bool Args::parseArgs(int argc, const std::vector<std::string> &args) {
                 input = std::string(args.at(ai + 1));
             } else if (args[ai] == "-output") {
                 output = std::string(args.at(ai + 1));
+            } else if (args[ai] == "-vocabPath") {
+                vocabPath = std::string(args.at(ai + 1));
             } else if (args[ai] == "-hardware") {
                 hardware = std::string(args.at(ai + 1));
             } else if (args[ai] == "-loss") {
@@ -97,7 +100,7 @@ bool Args::parseArgs(int argc, const std::vector<std::string> &args) {
                 ws = std::stoi(args.at(ai + 1));
             } else if (args[ai] == "-epoch") {
                 epoch = std::stoi(args.at(ai + 1));
-            } else if (args[ai] == "-epoch") {
+            } else if (args[ai] == "-subProblemEpoch") {
                 subProblemEpoch = std::stoi(args.at(ai + 1));
             } else if (args[ai] == "-neg") {
                 neg = std::stoi(args.at(ai + 1));

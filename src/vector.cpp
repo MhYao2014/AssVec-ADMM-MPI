@@ -43,7 +43,14 @@ void Vector::addVector(Vector &vec, double a) {
 
 void Vector::addRow(Matrix &mat, int64_t i, double a) {
     assert(i >= 0);
-    assert(i < mat.cols());
-    assert(size() == mat.rows());
+    assert(i < mat.rows());
+    assert(size() == mat.cols());
     mat.addRowToVector(*this, i, a);
+}
+
+void Vector::addRowTensor(Matrix &mat, int64_t Id, int64_t subId, double a) {
+    assert(Id >= 0);
+    assert(Id < mat.rows());
+    assert(size() + subId <= mat.cols());
+    mat.addPart(*this, Id, subId, a);
 }

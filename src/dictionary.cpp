@@ -56,6 +56,7 @@ Dictionary::~Dictionary() {
     }
     htmp = NULL;
     free(vocabHash);
+    free(vocabArray);
 }
 
 void Dictionary::setMinCount(long long minCount) {
@@ -86,7 +87,7 @@ void Dictionary::buildVocab() {
     char word[MaxWordLen];
     long long tokenCounter=0;
     long long vocabSize = 1717500;
-    ARRAYUNIT *vocabArray = (ARRAYUNIT *)malloc(sizeof(ARRAYUNIT) * vocabSize);
+    vocabArray = (ARRAYUNIT *)malloc(sizeof(ARRAYUNIT) * vocabSize);
     // 打开语料文件并转化为FILE指针
     FILE *corpusFile = fopen(_corpus_path.c_str(),"r");
     fprintf(stderr, "Building Vocabulary.");
@@ -111,7 +112,7 @@ void Dictionary::buildVocab() {
     // 释放内存，防止出现野指针与内存泄漏。
     // 把被砍掉的词汇（表现为id=-1）对应的字符串释放掉，但是指针本身还得保存，方便后续哈希查找。
     HASHUNITID *htmp= NULL;
-    for (int i=0;i<TSIZE;i++) {
+    for (long long i=0;i<TSIZE;i++) {
         if (vocabHash[i] != NULL) {
             htmp = vocabHash[i];
             while (htmp != NULL) {
@@ -125,7 +126,6 @@ void Dictionary::buildVocab() {
         }
     }
     htmp = NULL;
-    free(vocabArray);
 }
 unsigned int Dictionary::hashValue(char *word, int tsize, unsigned int seed) {
     char c;
@@ -380,13 +380,14 @@ void Dictionary::fillIdToVocabHash(ARRAYUNIT *VocabArray, HASHUNITID **VocabHash
 
 void Dictionary::setGroups(std::vector<GSIZE> &Groups) {
     GSIZE temp;
-    for (int i = 1; i < Groups.size(); i++) {
+    for (int i = 0; i < Groups.size(); i++) {
         temp.TotalSize = Groups[i].TotalSize;
         temp.FileNum = Groups[i].FileNum;
-        for (int j = 1; j < Groups[i].FileNames.size(); j++) {
+        for (int j = 0; j < Groups[i].FileNames.size(); j++) {
             temp.FileNames.push_back(Groups[i].FileNames[j]);
         }
         groups.push_back(temp);
+        temp.FileNames.clear();
     }
 }
 
@@ -402,7 +403,7 @@ long long Dictionary::hashSearch(char * Word) {
             id = htmp->id;
             break;
         } else {
-            htmp == htmp->next;
+            htmp = htmp->next;
         }
     }
     return id;
@@ -441,6 +442,7 @@ void Dictionary::splitCorpus(Args * p2Args) {
     std::vector<long long> line;
     // 记录已经处理了多少词窗了
     long long wordWinCount = 0;
+
     while (true) {
         // 如果原始语料到了文件末尾就跳出循环
         if (feof(CorpusSplit)) {
@@ -456,7 +458,7 @@ void Dictionary::splitCorpus(Args * p2Args) {
             if (line[i] == -1) {
                 continue;
             }
-            ftmp = fopen((std::to_string(line[i])).c_str(),"a+");
+            ftmp = fopen((p2Args->vocabPath+"/"+std::to_string(line[i])).c_str(),"a+");
             if (ftmp == NULL) {
                 throw "can not open file";
             }

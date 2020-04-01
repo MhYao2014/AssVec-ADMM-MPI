@@ -12,6 +12,7 @@ class Args {
 public:
     std::string input;
     std::string output;
+    std::string vocabPath;
     std::string hardware;
     std::string loss;
     int ifSaveVocab;

@@ -31,6 +31,7 @@ private:
     void saveSubProSolution(int Id);
     void recordLoss(FILE * p2Record);
     void saveVec(FILE * p2VecFile);
+    double shrinkLr(GradManager& gradManager, int64_t handledTokenNum);
 public:
     SkipGramMpiOpenmp();
     void initVariables(Dictionary *p2Dict, Args *p2Args, int rank) override;
