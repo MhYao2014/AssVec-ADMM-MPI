@@ -8,6 +8,7 @@
 #include<thread>
 #include<string>
 #include<vector>
+#include<atomic>
 #include"FileToWriteSync.h"
 #include "dictionary.h"
 #include "args.h"

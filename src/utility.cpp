@@ -4,6 +4,7 @@
 
 #include "utility.h"
 #include <atomic>
+#include <unistd.h>
 
 bool IfOneEpoch(FILE *p2File, int threadId, int threadNum){
     // todo:这里写了一个大bug。ftell不能返回有意义的文件位置就很坑。
