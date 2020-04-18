@@ -121,7 +121,7 @@ int main(int argc, char**argv) {
         }
     }
     MPI_Barrier(MPI_COMM_WORLD);
-    // 统计语料分组情况 1778828
+    // 统计语料分组情况
     // 统计所有语料文件的大小,按照大小合理分组语料文件,使得各组训练语料大小大致相同.
     // 并读取进程数量,进程数量即为分组数量
     int GroupNum;

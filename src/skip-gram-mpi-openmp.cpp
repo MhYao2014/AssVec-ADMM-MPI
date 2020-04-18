@@ -143,7 +143,9 @@ void SkipGramMpiOpenmp::train(Dictionary *p2Dict, Args *p2Args, int rank) {
             restoreOutput(p2Dict, p2Args); // 用O^k初始化O_m+1^k
         }
         // 平均所有O_m^k+1与y_m^k,清空
+        fprintf(stderr,"\n\r\t\t\tStart communication:%d", rank);
         MPI_Allreduce(p2Communicate->data(),p2Globe->data(),vocabSize*dim,MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
+        fprintf(stderr,"\n\r\t\t\tCommunication done:%d", rank);
         p2Globe->scalerMul(1.0 / (vocabSize)); p2Communicate->zero();
         // 实施梯度上升算法
         for (int memoId = 0; memoId < p2Dict->groups[rank].FileNum; memoId++) {
