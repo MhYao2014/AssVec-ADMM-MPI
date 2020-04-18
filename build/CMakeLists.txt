@@ -17,7 +17,11 @@ set(SOURCE_FILES
         ../src/LossFactory.cpp
         ../src/Loss.cpp
         ../src/skip-gram-mpi-openmp.cpp
-        ../src/gradmanager.cpp)
+        ../src/gradmanager.cpp
+        ../src/FileToWriteSync.cpp
+        ../src/WriterThread.cpp
+        ../src/utility.cpp
+        ../src/SkipGramSubproblem.cpp)
 
 set(HEADER_FILES
         ../src/args.h
@@ -27,7 +31,11 @@ set(HEADER_FILES
         ../src/LossFactory.h
         ../src/Loss.h
         ../src/skip-gram-mpi-openmp.h
-        ../src/gradmanager.h)
+        ../src/gradmanager.h
+        ../src/FileToWriteSync.h
+        ../src/WriterThread.h
+        ../src/utility.h
+        ../src/SkipGramSubproblem.h)
 
 add_library(AssVec-shared SHARED ${SOURCE_FILES} ${HEADER_FILES})
 add_library(AssVec-static STATIC ${SOURCE_FILES} ${HEADER_FILES})
