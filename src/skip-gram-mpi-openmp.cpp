@@ -93,7 +93,7 @@ void SkipGramMpiOpenmp::train(Dictionary *p2Dict, Args *p2Args, int rank) {
             if (rank == 0) {
                 fprintf(stderr, "\n\r\tsubProSolved/totalSubPro:%d/%lld:\n", memoId,p2Dict->groups[rank].FileNum);
             }
-            #pragma omp parallel num_threads(2) default(none), \
+            #pragma omp parallel default(none), \
             shared(memoId, p2Dict, p2Args, rank, stderr), \
             private(p2LossRecord)
             {
