@@ -5,8 +5,11 @@
 #define _LOSS_H_
 #include "Loss.h"
 #endif
-#include "args.h"
 
+#ifndef ASSVEC_ADMM_MPI_LOSSFACTORY_H
+#define ASSVEC_ADMM_MPI_LOSSFACTORY_H
+
+#include "args.h"
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,3 +30,5 @@ public:
     bool checkSupport();
     Loss *createLoss();
 };
+
+#endif

@@ -1,7 +1,9 @@
 //
 // Created by mhyao on 2020/2/25.
 //
-#pragma once
+#ifndef ASSVEC_ADMM_MPI_DICTIONARY_H
+#define ASSVEC_ADMM_MPI_DICTIONARY_H
+
 #define TSIZE 1048576
 #define SEED 1159241
 #define MaxWordLen 1000
@@ -14,6 +16,7 @@
 #include <vector>
 
 #include "args.h"
+#include "FileToWriteSync.h"
 
 typedef struct VocabHashWithId{
     char *Word;
@@ -45,13 +48,13 @@ private:
     long long _max_vocab;
     int _if_save_vocab;
     long long _real_vocab_size;
+    long long _total_tokens;
     unsigned int hashValue(char *word, int tsize, unsigned int seed);
     void hashMapWord(char *Word, HASHUNITID **VocabHash);
     int getWord(FILE *corpusFile, char *word);
     long long hashToArray(HASHUNITID **vocabHash, ARRAYUNIT * vocabArray, long long vocabSize);
     void cutVocab(ARRAYUNIT* vocabArray, long long vocabSize);
     void fillIdToVocabHash(ARRAYUNIT *vocabArray, HASHUNITID ** vocabHash);
-    void getLine(FILE * CorpusSplit, std::vector<long long> &line);
     long long getWordId(char *Word);
     long long hashSearch(char *Word);
 public:
@@ -68,7 +71,8 @@ public:
     void setGroups(std::vector<GSIZE> &Groups);
     long long getRealVocabSize();
     void buildVocab();
-    void splitCorpus(Args * p2Args);
+    void getLine(FILE * CorpusSplit, std::vector<long long> &line);
+    long long getTotalTokens();
 
     int getNumInt(FILE *p2File, long long &numInt);
     int getNumEachLine(FILE * p2File,
@@ -76,3 +80,5 @@ public:
                     int NotReadSuccess,
                     std::vector<long long> &WinSamp);
 };
+
+#endif

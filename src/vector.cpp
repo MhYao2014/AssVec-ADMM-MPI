@@ -4,6 +4,7 @@
 #include "vector.h"
 #include <cmath>
 #include <assert.h>
+#include <random>
 
 Vector::Vector(int64_t m): data_(m) {}
 
@@ -53,4 +54,12 @@ void Vector::addRowTensor(Matrix &mat, int64_t Id, int64_t subId, double a) {
     assert(Id < mat.rows());
     assert(size() + subId <= mat.cols());
     mat.addPart(*this, Id, subId, a);
+}
+
+void Vector::uniform(double bound) {
+    std::minstd_rand rng(time(NULL));
+    std::uniform_real_distribution<> uniform(-bound, bound);
+    for (int i = 0; i < data_.size(); i++) {
+        data_[i] = uniform(rng);
+    }
 }

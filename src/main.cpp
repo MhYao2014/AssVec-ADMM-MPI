@@ -13,6 +13,7 @@
 #include "args.h"
 #include "dictionary.h"
 #include "LossFactory.h"
+#include "utility.h"
 
 
 int CompareFile(const void*a, const void*b) {
@@ -113,10 +114,14 @@ int main(int argc, char**argv) {
     dict.setIfSaveVocab(arguments.ifSaveVocab);
     dict.buildVocab();
     if (rank == 0 && arguments.ifSplitCorpus == 1) { // 只需要一个进程分割文件间就可以了
-        dict.splitCorpus(&arguments);
+        if (arguments.corpusSplitThread == 1) {
+            splitCorpus(&arguments,&dict);
+        } else {
+            splitCorpusParallel(&arguments,&dict);
+        }
     }
     MPI_Barrier(MPI_COMM_WORLD);
-    // 统计语料分组情况
+    // 统计语料分组情况 1778828
     // 统计所有语料文件的大小,按照大小合理分组语料文件,使得各组训练语料大小大致相同.
     // 并读取进程数量,进程数量即为分组数量
     int GroupNum;

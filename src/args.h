@@ -1,7 +1,8 @@
 //
 // Created by mhyao on 20-1-10.
 //
-#pragma once
+#ifndef ASSVEC_ADMM_MPI_ARGS_H
+#define ASSVEC_ADMM_MPI_ARGS_H
 
 #include <istream>
 #include <ostream>
@@ -17,6 +18,7 @@ public:
     std::string loss;
     int ifSaveVocab;
     int ifSplitCorpus;
+    int corpusSplitThread;
     int minCount;
     int maxVocab;
     std::string vocabSavePath;
@@ -33,3 +35,5 @@ public:
     bool parseArgs(int argc,const std::vector<std::string>& args);
     void printHelp();
 };
+
+#endif

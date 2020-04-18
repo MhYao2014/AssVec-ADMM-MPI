@@ -10,8 +10,10 @@ void GradManager::setLr(double newLr) {
 
 GradManager::GradManager(int dim, int seed):inputGrad(dim),
                                             inputVec(dim),
+                                            inputVecBackUp(dim),
                                             outputGrad(dim),
                                             outputVec(dim),
+                                            outputVecBackUp(dim),
                                             rng(seed),
                                             inId(0),
                                             inDictId(0),

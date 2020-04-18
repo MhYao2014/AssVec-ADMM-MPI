@@ -11,10 +11,11 @@
 Args::Args() {
     ifSaveVocab = 1;
     ifSplitCorpus = 0;
+    corpusSplitThread = 1;
     minCount = 40;
     maxVocab = 100000;
     lr = 0.05;
-    rhoOut = 0.5;
+    rhoOut = 0.015;
     lrUpdateRate = 100;
     dim = 100;
     ws = 5;
@@ -29,9 +30,10 @@ void Args::printHelp() {
               << "  -output             output vectors path\n"
               << "  -vocabPath          vocab file path, 结尾不要加入斜杠。\n"
               << "  -hardware           supported hardware condition lists are: [MPI+Openmpi]\n"
-              << "  -loss               supported loss model lists are: [SkipGram+MPI+Openmpi]\n"
+              << "  -loss               supported loss model lists are: [skip-gram-mpi-openmp, skip-gram-subPro]\n"
               << "  -IfSaveVocab        whether save the vocab file\n"
               << "  -IfSplitCorpus      whether split the corpus file\n"
+              << "  -corpusSplitThread  thread used to split corpus\n"
               << "  -minCount           minimal number of word occurences ["
               << minCount << "]\n"
               << "  -maxVocab           maximal number of word vocabulary ["
@@ -82,6 +84,8 @@ bool Args::parseArgs(int argc, const std::vector<std::string> &args) {
                 ifSaveVocab = std::stoi(args.at(ai + 1));
             } else if (args[ai] == "-IfSplitCorpus") {
                 ifSplitCorpus = std::stoi(args.at(ai + 1));
+            } else if (args[ai] == "-corpusSplitThread") {
+                corpusSplitThread = std::stoi(args.at(ai + 1));
             } else if (args[ai] == "-minCount") {
                 minCount = std::stoi(args.at(ai + 1));
             } else if (args[ai] == "-maxVocab") {
@@ -91,7 +95,7 @@ bool Args::parseArgs(int argc, const std::vector<std::string> &args) {
             } else if (args[ai] == "-lr") {
                 lr = std::stof(args.at(ai + 1));
             } else if (args[ai] == "-rhoOut") {
-                lr = std::stof(args.at(ai + 1));
+                rhoOut = std::stof(args.at(ai + 1));
             } else if (args[ai] == "-lrUpdateRate") {
                 lrUpdateRate = std::stoi(args.at(ai + 1));
             } else if (args[ai] == "-dim") {

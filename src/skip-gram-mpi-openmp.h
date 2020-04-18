@@ -5,33 +5,35 @@
 #define _LOSS_H_
 #include "Loss.h"
 #endif
+
+#ifndef ASSVEC_ADMM_MPI_SKIPGRAMMPIOPENMP_H
+#define ASSVEC_ADMM_MPI_SKIPGRAMMPIOPENMP_H
+
 #include "matrix.h"
 #include "gradmanager.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <random>
+#include <atomic>
 
 class SkipGramMpiOpenmp: public Loss {
 private:
     long long vocabSize;
     int dim;
-    double lossSG;
-    Matrix * p2Input;
-    Matrix * p2Dual;
-    Matrix * p2SubProSolution;
-    Matrix * p2Output;
-    Matrix * p2Communicate;
-    Matrix * p2Globe;
+    std::atomic<double> lossSG;
+    std::shared_ptr<Matrix> p2Input;// i_m
+    std::shared_ptr<Matrix> p2InputBackUp;
+    std::shared_ptr<Matrix> p2Dual;// y_m
+    std::shared_ptr<Matrix> p2SubProSolution;// o_m^k
+    std::shared_ptr<Matrix> p2Output;// o_m^k+1
+    std::shared_ptr<Matrix> p2OutputBackUp;
+    std::shared_ptr<Matrix> p2Communicate;// temp
+    std::shared_ptr<Matrix> p2Globe;// o
     void initNegAndUniTable(Dictionary * p2Dict);
-    bool IfOneEpoch(FILE *p2File, int threadId, int threadNum);
-    bool IfKeepTrain();
-    void accumuOutput(Dictionary * p2Dict, Args * p2Args, int variId);
+    void localSumOutput(Dictionary * p2Dict, Args * p2Args, int variId);
     void restoreOutput(Dictionary * p2Dict, Args * p2Args);
     void saveSubProSolution(int Id);
-    void recordLoss(FILE * p2Record);
     void saveVec(FILE * p2VecFile);
-    double shrinkLr(GradManager& gradManager, int64_t handledTokenNum);
 public:
     SkipGramMpiOpenmp();
     void initVariables(Dictionary *p2Dict, Args *p2Args, int rank) override;
@@ -47,3 +49,5 @@ public:
                         GradManager &gradManager);
     void gradUpdate(GradManager &gradManager, Args * p2Args);
 };
+
+#endif

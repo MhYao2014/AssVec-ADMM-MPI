@@ -4,10 +4,13 @@
 #pragma once
 
 #include "dictionary.h"
+#include "WriterThread.h"
+#include "FileToWriteSync.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <fstream>
+#include <thread>
 
 int scmp(char *s1, char *s2) {
     // 以s1字符串为标准，看s2是不是等于s1
@@ -34,10 +37,16 @@ Dictionary::Dictionary():_min_count(100),
                         _max_vocab(100000),
                         _if_save_vocab(1),
                         _real_vocab_size(0),
+                        _total_tokens(0),
+                        vocabArray(NULL),
                         vocabHash(NULL){}
 
 void Dictionary::setCorpusPath(std::string &corpusPath) {
     _corpus_path = corpusPath;
+}
+
+long long Dictionary::getTotalTokens() {
+    return _total_tokens;
 }
 
 Dictionary::~Dictionary() {
@@ -102,6 +111,8 @@ void Dictionary::buildVocab() {
             fprintf(stderr, "\rHave read %lld tokens so far.",tokenCounter);
         }
     }
+    // 记录原始语料有多少单词。
+    _total_tokens = tokenCounter;
     // 将带链表的哈希表转化为数组array，方便后面排序
     vocabSize = Dictionary::hashToArray(vocabHash,vocabArray,vocabSize);
     fprintf(stderr, "\nCounted %lld unique words.\n", vocabSize);
@@ -429,60 +440,6 @@ void Dictionary::getLine(FILE *CorpusSplit, std::vector<long long> &line) {
             // 这里没有查到的词也放进去，
             // 稀疏一下line的容量（因为后面会跳过这些词）
             line.push_back(id);
-        }
-    }
-}
-
-void Dictionary::splitCorpus(Args * p2Args) {
-    // 打开原始语料文件
-    FILE * CorpusSplit = fopen(_corpus_path.c_str(),"r");
-    // 设立一个临时文件指针，用来指向每个遇到的文件
-    FILE * ftmp = NULL;
-    // line存储原始语料中的一行中所有词汇的序号
-    std::vector<long long> line;
-    // 记录已经处理了多少词窗了
-    long long wordWinCount = 0;
-
-    while (true) {
-        // 如果原始语料到了文件末尾就跳出循环
-        if (feof(CorpusSplit)) {
-            break;
-        }
-        // 读取一整行，并转化为序号存入vector容器中
-        Dictionary::getLine(CorpusSplit, line);
-        // 从同至尾遍历每个序号，建立对应词窗
-        for (int i = 0; i < line.size(); i++) {
-            // 检测当前词汇是否已经创立了对应的文件
-            // 如果没有那就创建，否则打开对应文件并写入数据
-            // 遇到放弃的词就跳过
-            if (line[i] == -1) {
-                continue;
-            }
-            ftmp = fopen((p2Args->vocabPath+"/"+std::to_string(line[i])).c_str(),"a+");
-            if (ftmp == NULL) {
-                throw "can not open file";
-            }
-            for (int j = -p2Args->ws; j <= p2Args->ws; j++) {
-                // 跳过与自己共现
-                if (j == 0) {
-                    continue;
-                }
-                // 检测i+j指向的词是否还在line的范围内
-                if (i+j >= 0 && i+j < line.size()) {
-                    if (line[i+j] == -1) {
-                        continue;
-                    }
-                    fprintf(ftmp, "%s\t", std::to_string(line[i+j]).c_str());
-                }
-            }
-            // 当前中心词的一个词窗处理完毕，在相应文件中换行
-            fprintf(ftmp, "\n");
-            fclose(ftmp);
-        }
-        // 记录处理过的词窗个数
-        wordWinCount += line.size();
-        if (wordWinCount % 100000 == 0) {
-            fprintf(stderr, "\rHave processed %lld word windows", wordWinCount);
         }
     }
 }

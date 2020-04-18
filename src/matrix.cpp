@@ -18,7 +18,7 @@ void Matrix::zero() {
 }
 
 void Matrix::uniform(double a) {
-    std::minstd_rand rng(1);
+    std::minstd_rand rng(time(NULL));
     std::uniform_real_distribution<> uniform(-a, a);
     for (int64_t i=0; i < (row_ * col_); i++) {
         data_[i] = uniform(rng);

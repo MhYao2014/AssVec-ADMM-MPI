@@ -3,6 +3,7 @@
 //
 
 #include "Loss.h"
+#include "utility.h"
 #include <fstream>
 Loss::Loss() {
     t_sigmoid_.reserve(512 + 1);
@@ -46,13 +47,21 @@ long long Loss::getNegative(long long id, std::minstd_rand &rng) {
     return negative;
 }
 
-long Loss::size(FILE * p2File) {
-    std::fseek(p2File, 0, SEEK_END);
-    long size = ftell(p2File);
-    return size;
-}
-
 void Loss::seek(std::ifstream& ifs, int64_t pos) {
     ifs.clear();
     ifs.seekg(std::streampos(pos));
+}
+
+double Loss::shrinkLr(GradManager& gradient,FILE* p2TrainFile, int threadId, int threadNum, int subEpo, int totalEpo, double InitLr) {
+    auto currentPos = ftell(p2TrainFile);
+    fseek(p2TrainFile,threadId*size(p2TrainFile)/threadNum,SEEK_SET);
+    auto beginPos = ftell(p2TrainFile);
+    fseek(p2TrainFile,(threadId+1)*size(p2TrainFile)/threadNum,SEEK_SET);
+    auto endPos = ftell(p2TrainFile);
+    double currentEpoProcess = (double)(currentPos - beginPos) / (double)(endPos - beginPos);
+    double totalEpoProcess = currentEpoProcess/(double)totalEpo + (double) subEpo / (double) totalEpo;
+    fseek(p2TrainFile,currentPos,SEEK_SET);
+//    gradient.setLr(InitLr);
+    gradient.setLr((1-totalEpoProcess)*InitLr);
+    return currentEpoProcess;
 }

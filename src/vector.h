@@ -5,8 +5,6 @@
 #ifndef ASSVEC_VECTOR_H
 #define ASSVEC_VECTOR_H
 
-#endif //ASSVEC_VECTOR_H
-
 #include <cstdint>
 #include <ostream>
 #include <vector>
@@ -50,4 +48,8 @@ public:
     void addRow(Matrix& mat, int64_t i, double a);
     // 计算将张量中的某个向量加到外部向量上
     void addRowTensor(Matrix& mat, int64_t Id, int64_t subId, double a);
+    // 随机初始化该向量
+    void uniform(double bound);
 };
+
+#endif //ASSVEC_VECTOR_H

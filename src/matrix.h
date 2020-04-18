@@ -1,6 +1,8 @@
 //
 // Created by mhyao on 20-1-21.
 //
+#ifndef ASSVEC_MATRIX_H
+#define ASSVEC_MATRIX_H
 #pragma once
 #include <vector>
 #include <cstdint>
@@ -66,3 +68,5 @@ public:
     // 把矩阵的某一行加到另一个矩阵的另一行
     void addRow2Row(Matrix &mat, int selfId, int Id, double a);
 };
+
+#endif

@@ -1,6 +1,9 @@
 //
 // Created by mhyao on 2020/2/9.
 //
+#ifndef ASSVEC_ADMM_MPI_LOSS_H
+#define ASSVEC_ADMM_MPI_LOSS_H
+
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,6 +12,7 @@
 #include <random>
 #include "dictionary.h"
 #include "args.h"
+#include "gradmanager.h"
 
 class Loss {
 protected:
@@ -30,7 +34,11 @@ public:
 
     long long getNegative(long long id, std::minstd_rand & rng);
 
-    int64_t size(FILE * p2File);
+//    int64_t size(FILE * p2File);
 
     void seek(std::ifstream&, int64_t);
+
+    double shrinkLr(GradManager& gradient,FILE* p2ReadFile,int threadId, int threadNum, int subEpo, int totalEpo,double InitLr);
 };
+
+#endif //ASSVEC_ADMM_MPI_LOSS_H
