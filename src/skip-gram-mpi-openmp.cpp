@@ -100,7 +100,7 @@ void SkipGramMpiOpenmp::train(Dictionary *p2Dict, Args *p2Args, int rank) {
             {
                 // 请略过下面的私有变量定义区。
                 int threadId = omp_get_thread_num(), threadNum= omp_get_num_threads();const int seed = threadId;
-                std::default_random_engine dre(seed);std::uniform_int_distribution<int> d(1, 10);
+                std::default_random_engine dre(seed);std::uniform_int_distribution<int> d(1, 20);
                 long long tmpTrainFileId; FILE *p2TrainFile;std::vector<long long> line; int NotReadSuccess = 0;
                 long long tempId = 0; GradManager gradient(p2Args->dim, rank);
                 //把内存id：memoId转化为字典id：tmpTrainFileName
@@ -121,7 +121,7 @@ void SkipGramMpiOpenmp::train(Dictionary *p2Dict, Args *p2Args, int rank) {
                     while (IfOneEpoch(p2TrainFile,threadId,threadNum)) {
                         // 读取文件中的一行
                         p2Dict->getNumEachLine(p2TrainFile, tempId, NotReadSuccess, line);
-                        if (d(dre) < 8) {
+                        if (d(dre) < 18) {
                             continue;
                         }
                         if (!line.empty()) {
@@ -160,7 +160,7 @@ void SkipGramMpiOpenmp::train(Dictionary *p2Dict, Args *p2Args, int rank) {
         // 主进程保存相关数据,和词向量文件
         if (rank == 0) {
             FILE * p2VecFile = fopen((p2Args->output + std::to_string(AdmmEpo+1)).c_str(),"w");
-            saveVec(p2VecFile);
+            saveVec(p2VecFile,p2Dict);
             fclose(p2VecFile);
         }
     }
@@ -269,9 +269,11 @@ void SkipGramMpiOpenmp::initNegAndUniTable(Dictionary * p2Dict) {
     uniform_ = std::uniform_int_distribution<size_t>(0,negatives_.size() - 1);
 }
 
-void SkipGramMpiOpenmp::saveVec(FILE *p2VecFile) {
+void SkipGramMpiOpenmp::saveVec(FILE *p2VecFile,Dictionary* p2Dict) {
     int64_t index = 0;
+    fprintf(p2VecFile,"%lld %d\n",vocabSize,dim);
     for (int64_t i = 0; i < p2Globe->rows(); i++) {
+        fprintf(p2VecFile,"%s ",p2Dict->vocabArray[i].Word);
         for (int64_t j = 0; j < p2Globe->cols(); j++) {
             index = p2Globe->cols() * i + j;
             fprintf(p2VecFile, "%f ", p2Globe->data()[index]);

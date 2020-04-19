@@ -33,7 +33,7 @@ private:
     void localSumOutput(Dictionary * p2Dict, Args * p2Args, int variId);
     void restoreOutput(Dictionary * p2Dict, Args * p2Args);
     void saveSubProSolution(int Id);
-    void saveVec(FILE * p2VecFile);
+    void saveVec(FILE * p2VecFile, Dictionary* p2Dict);
 public:
     SkipGramMpiOpenmp();
     void initVariables(Dictionary *p2Dict, Args *p2Args, int rank) override;
