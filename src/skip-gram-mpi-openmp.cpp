@@ -8,6 +8,7 @@
 #include "args.h"
 #include "utility.h"
 
+#include <random>
 #include <stdio.h>
 #include <stdlib.h>
 #include <mpi.h>
@@ -98,7 +99,8 @@ void SkipGramMpiOpenmp::train(Dictionary *p2Dict, Args *p2Args, int rank) {
             private(p2LossRecord)
             {
                 // 请略过下面的私有变量定义区。
-                int threadId = omp_get_thread_num(), threadNum= omp_get_num_threads();
+                int threadId = omp_get_thread_num(), threadNum= omp_get_num_threads();const int seed = threadId;
+                std::default_random_engine dre(seed);std::uniform_int_distribution<int> d(1, 10);
                 long long tmpTrainFileId; FILE *p2TrainFile;std::vector<long long> line; int NotReadSuccess = 0;
                 long long tempId = 0; GradManager gradient(p2Args->dim, rank);
                 //把内存id：memoId转化为字典id：tmpTrainFileName
@@ -119,6 +121,9 @@ void SkipGramMpiOpenmp::train(Dictionary *p2Dict, Args *p2Args, int rank) {
                     while (IfOneEpoch(p2TrainFile,threadId,threadNum)) {
                         // 读取文件中的一行
                         p2Dict->getNumEachLine(p2TrainFile, tempId, NotReadSuccess, line);
+                        if (d(dre) < 8) {
+                            continue;
+                        }
                         if (!line.empty()) {
                             // 计算loss,计算并更新所有梯度
                             SkipGramMpiOpenmp::lossEachWin(p2Dict, p2Args, rank, line, gradient);
@@ -143,7 +148,7 @@ void SkipGramMpiOpenmp::train(Dictionary *p2Dict, Args *p2Args, int rank) {
             restoreOutput(p2Dict, p2Args); // 用O^k初始化O_m+1^k
         }
         // 平均所有O_m^k+1与y_m^k,清空
-        fprintf(stderr,"\n\r\t\t\tStart communication:%d", rank);
+        fprintf(stderr,"\n\r\t\t\tStart communication:%d\n", rank);
         MPI_Allreduce(p2Communicate->data(),p2Globe->data(),vocabSize*dim,MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
         fprintf(stderr,"\n\r\t\t\tCommunication done:%d", rank);
         p2Globe->scalerMul(1.0 / (vocabSize)); p2Communicate->zero();
